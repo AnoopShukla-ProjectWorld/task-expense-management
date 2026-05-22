@@ -194,11 +194,11 @@ function TeamTaskPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+          <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight flex items-center gap-3">
             <FaTasks className="text-blue-500 text-2xl" />
             Team Tasks
           </h1>
-          <p className="text-slate-400 text-sm mt-1">Assign, delegate, and manage tasks for employees in your projects</p>
+          <p className="text-[var(--text-secondary)] text-sm mt-1">Assign, delegate, and manage tasks for employees in your projects</p>
         </div>
         {managerProjectIds.length > 0 && (
           <Button 

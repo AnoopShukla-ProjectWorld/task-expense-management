@@ -127,8 +127,8 @@ function ProjectsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Projects Management</h1>
-          <p className="text-slate-400 text-sm mt-1">Create and oversee all enterprise projects and high-level milestones</p>
+          <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Projects Management</h1>
+          <p className="text-[var(--text-secondary)] text-sm mt-1">Create and oversee all enterprise projects and high-level milestones</p>
         </div>
         <Button onClick={() => { setEditingProject(null); setIsModalOpen(true); }}>
           Create Project

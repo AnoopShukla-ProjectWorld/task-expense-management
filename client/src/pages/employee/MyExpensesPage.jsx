@@ -186,8 +186,8 @@ function MyExpensesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">My Expense Claims</h1>
-          <p className="text-gray-500">File and track reimbursements for business expenditures</p>
+          <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">My Expense Claims</h1>
+          <p className="text-[var(--text-secondary)] text-sm mt-1">File and track reimbursements for business expenditures</p>
         </div>
         <Button onClick={() => { setEditingExpense(null); setIsModalOpen(true); }} className="flex items-center gap-2">
           <FaPlus /> Submit Expense

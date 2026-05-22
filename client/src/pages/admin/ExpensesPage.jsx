@@ -172,8 +172,8 @@ function ExpensesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight">Enterprise Expenses</h1>
-        <p className="text-slate-400 text-sm mt-1">Audit, review, and handle expense reimbursements across all roles</p>
+        <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Enterprise Expenses</h1>
+        <p className="text-[var(--text-secondary)] text-sm mt-1">Audit, review, and handle expense reimbursements across all roles</p>
       </div>
 
       <DataTable

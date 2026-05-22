@@ -103,8 +103,8 @@ function UsersPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Users Management</h1>
-          <p className="text-slate-400 text-sm mt-1">Manage and provision team profiles and permissions</p>
+          <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Users Management</h1>
+          <p className="text-[var(--text-secondary)] text-sm mt-1">Manage and provision team profiles and permissions</p>
         </div>
         <Button onClick={() => { setEditingUser(null); setIsModalOpen(true); }}>
           Create User
