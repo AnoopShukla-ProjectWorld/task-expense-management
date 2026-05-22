@@ -2,11 +2,11 @@ function TableLoader() {
   return (
     <div
       className="
-        bg-white rounded-2xl
+        glass-panel bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl
         p-6 animate-pulse
       "
     >
-      <div className="h-10 bg-gray-200 rounded mb-4" />
+      <div className="h-10 bg-[var(--bg-primary)] rounded mb-4" />
 
       <div className="space-y-3">
         {Array.from({
@@ -15,7 +15,7 @@ function TableLoader() {
           <div
             key={index}
             className="
-              h-12 bg-gray-100
+              h-12 bg-[var(--bg-primary)]/70
               rounded
             "
           />

@@ -9,13 +9,8 @@ function ProductivityChart({
   data,
 }) {
   return (
-    <div
-      className="
-        bg-white rounded-2xl
-        shadow-sm p-6
-      "
-    >
-      <h2 className="text-xl font-bold mb-5">
+    <div className="glass-panel rounded-2xl p-6 shadow-lg">
+      <h2 className="text-xl font-bold mb-5 text-[var(--text-primary)]">
         Productivity
       </h2>
 
@@ -30,7 +25,17 @@ function ProductivityChart({
             nameKey="name"
           />
 
-          <Tooltip />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: "var(--bg-secondary)", 
+              borderColor: "var(--border-color)", 
+              borderRadius: "12px", 
+              color: "var(--text-primary)",
+              backdropFilter: "blur(16px)"
+            }}
+            labelStyle={{ color: "var(--text-primary)", fontWeight: "bold" }}
+            itemStyle={{ color: "var(--accent-blue)" }}
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>

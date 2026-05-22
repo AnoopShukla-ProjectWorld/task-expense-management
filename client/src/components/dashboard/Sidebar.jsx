@@ -53,7 +53,7 @@ function Sidebar({ onClose }) {
   };
 
   return (
-    <aside className="w-72 h-screen flex flex-col justify-between p-6 bg-slate-950/80 border-r border-white/5 backdrop-blur-xl">
+    <aside className="w-72 h-screen flex flex-col justify-between p-6 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] backdrop-blur-xl">
       <div>
         {/* Logo Header */}
         <div className="flex items-center justify-between mb-10">
@@ -61,7 +61,7 @@ function Sidebar({ onClose }) {
             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-md shadow-blue-500/20 text-white text-lg">
               <FaCheckDouble />
             </div>
-            <h1 className="text-sm font-bold tracking-wide leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+            <h1 className="text-sm font-bold tracking-wide leading-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)]">
               Workspace Portal
             </h1>
           </div>
@@ -69,7 +69,7 @@ function Sidebar({ onClose }) {
           {onClose && (
             <button
               onClick={onClose}
-              className="lg:hidden p-2 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-white transition-all"
+              className="lg:hidden p-2 rounded-xl bg-[var(--bg-primary)]/40 border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]/80 transition-all cursor-pointer"
             >
               <FaTimes />
             </button>
@@ -91,8 +91,8 @@ function Sidebar({ onClose }) {
               className={({ isActive }) =>
                 `group flex items-center gap-3.5 px-4 py-3.5 rounded-2xl border transition-all duration-200 ${
                   isActive
-                    ? "bg-blue-600/10 border-blue-500/30 text-blue-400 shadow-md font-semibold text-glow"
-                    : "bg-transparent border-transparent text-[#94a3b8] hover:text-white hover:bg-white/5"
+                    ? "bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400 shadow-md font-semibold dark:text-glow"
+                    : "bg-transparent border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
                 }`
               }
             >
@@ -106,17 +106,17 @@ function Sidebar({ onClose }) {
       </div>
 
       {/* Profile & Logout Footer */}
-      <div className="pt-6 border-t border-white/5">
+      <div className="pt-6 border-t border-[var(--border-color)]">
         {/* User profile details snippet */}
-        <div className="flex items-center gap-3.5 p-3.5 bg-white/5 rounded-2xl border border-white/5 mb-4 shadow-sm">
+        <div className="flex items-center gap-3.5 p-3.5 bg-[var(--bg-tertiary)] rounded-2xl border border-[var(--border-color)] mb-4 shadow-sm">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold uppercase shadow-sm">
             {user?.fullName ? user.fullName.charAt(0) : "U"}
           </div>
           <div className="flex-1 overflow-hidden">
-            <h4 className="text-sm font-semibold truncate text-white">
+            <h4 className="text-sm font-semibold truncate text-[var(--text-primary)]">
               {user?.fullName || "User"}
             </h4>
-            <p className="text-[10px] font-bold text-blue-400 tracking-widest uppercase">
+            <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
               {role}
             </p>
           </div>
@@ -127,7 +127,7 @@ function Sidebar({ onClose }) {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-2xl bg-white/5 border border-white/5 hover:border-red-500/30 hover:bg-red-500/10 text-slate-300 hover:text-red-400 font-semibold text-sm transition-all duration-300 shadow-sm"
+          className="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 rounded-2xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] hover:border-red-500/30 hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500 font-semibold text-sm transition-all duration-300 shadow-sm cursor-pointer"
         >
           <FaSignOutAlt />
           <span>Logout</span>

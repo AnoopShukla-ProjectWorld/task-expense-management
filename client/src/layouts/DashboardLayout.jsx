@@ -8,7 +8,7 @@ function DashboardLayout() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen w-full flex bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
+    <div className="h-screen w-full overflow-hidden flex bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
       {/* Background Mesh Overlays */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[20%] left-[-10%] w-[35%] h-[35%] rounded-full bg-blue-500/5 blur-[100px]" />
@@ -16,7 +16,7 @@ function DashboardLayout() {
       </div>
 
       {/* Desktop Sidebar (visible on lg+) */}
-      <div className="hidden lg:block z-20">
+      <div className="hidden lg:block z-20 h-full flex-shrink-0">
         <Sidebar />
       </div>
 
@@ -47,7 +47,7 @@ function DashboardLayout() {
       </AnimatePresence>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen z-10">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden z-10">
         <Navbar onMenuToggle={() => setMobileSidebarOpen(!mobileSidebarOpen)} />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl w-full mx-auto">

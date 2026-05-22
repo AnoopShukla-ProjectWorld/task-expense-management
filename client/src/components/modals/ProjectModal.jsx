@@ -72,7 +72,7 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-slate-955/65 backdrop-blur-md cursor-pointer"
+          className="fixed inset-0 bg-slate-950/65 backdrop-blur-md cursor-pointer"
         />
 
         <motion.div
@@ -88,14 +88,14 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
           {/* Header */}
           <div className="flex justify-between items-center mb-6 relative">
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+              <h2 className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)]">
                 {initialData ? "Edit Project Blueprint" : "Initialize New Project"}
               </h2>
-              <p className="text-xs text-slate-400 mt-1">Configure project scopes, limits, and leadership</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-1">Configure project scopes, limits, and leadership</p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              className="p-2 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all cursor-pointer"
             >
               <FaTimes className="text-sm" />
             </button>
@@ -104,9 +104,9 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
           <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto pr-1 scrollbar-thin relative">
             
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Project Name *</label>
+              <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Project Name *</label>
               <div className="relative group">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-blue-400 transition-colors">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors">
                   <FaProjectDiagram className="text-sm" />
                 </span>
                 <input
@@ -114,7 +114,7 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                   placeholder="Enterprise Core Upgrade"
                   required
                   {...register("project_name", { required: "Project name is required" })}
-                  className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/5 rounded-2xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-white/[0.07] transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all"
                 />
               </div>
               {errors.project_name && (
@@ -123,32 +123,32 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Scope & Description</label>
+              <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Scope & Description</label>
               <div className="relative group">
-                <span className="absolute top-3 left-4 text-slate-400 group-focus-within:text-blue-400 transition-colors">
+                <span className="absolute top-3 left-4 text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors">
                   <FaInfoCircle className="text-sm" />
                 </span>
                 <textarea
                   rows={3}
                   placeholder="Describe project targets, goals, and team expectations..."
                   {...register("description")}
-                  className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/5 rounded-2xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-white/[0.07] transition-all resize-none"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all resize-none"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Start Date *</label>
+                <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Start Date *</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] pointer-events-none">
                     <FaCalendarAlt className="text-sm" />
                   </span>
                   <input
                     type="date"
                     required
                     {...register("start_date", { required: "Start date is required" })}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-white/5 rounded-2xl text-sm text-white outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 transition-all focus:bg-[var(--bg-secondary)]"
                   />
                 </div>
                 {errors.start_date && (
@@ -157,9 +157,9 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">End Target</label>
+                <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">End Target</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] pointer-events-none">
                     <FaCalendarAlt className="text-sm" />
                   </span>
                   <input
@@ -171,7 +171,7 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                         return new Date(val) >= new Date(startDateWatch) || "End target must exceed start date";
                       }
                     })}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-white/5 rounded-2xl text-sm text-white outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 transition-all focus:bg-[var(--bg-secondary)]"
                   />
                 </div>
                 {errors.end_date && (
@@ -182,59 +182,59 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Priority Rating *</label>
+                <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Priority Rating *</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] pointer-events-none">
                     <FaFlag className="text-sm" />
                   </span>
                   <select
                     required
                     {...register("priority", { required: "Priority is required" })}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-white/5 rounded-2xl text-sm text-white outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 cursor-pointer transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 cursor-pointer transition-all focus:bg-[var(--bg-secondary)]"
                   >
-                    <option value="LOW" className="bg-slate-950 text-slate-200">Low</option>
-                    <option value="MEDIUM" className="bg-slate-950 text-slate-200">Medium</option>
-                    <option value="HIGH" className="bg-slate-950 text-slate-200">High</option>
-                    <option value="CRITICAL" className="bg-slate-950 text-slate-200">Critical</option>
+                    <option value="LOW" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Low</option>
+                    <option value="MEDIUM" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Medium</option>
+                    <option value="HIGH" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">High</option>
+                    <option value="CRITICAL" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Critical</option>
                   </select>
                 </div>
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">State / Status *</label>
+                <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">State / Status *</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] pointer-events-none">
                     <FaChartLine className="text-sm" />
                   </span>
                   <select
                     required
                     {...register("status", { required: "Status is required" })}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-white/5 rounded-2xl text-sm text-white outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 cursor-pointer transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 cursor-pointer transition-all focus:bg-[var(--bg-secondary)]"
                   >
-                    <option value="PLANNED" className="bg-slate-950 text-slate-200">Planned</option>
-                    <option value="ACTIVE" className="bg-slate-950 text-slate-200">Active</option>
-                    <option value="ON_HOLD" className="bg-slate-950 text-slate-200">On Hold</option>
-                    <option value="COMPLETED" className="bg-slate-950 text-slate-200">Completed</option>
-                    <option value="CANCELLED" className="bg-slate-950 text-slate-200">Cancelled</option>
+                    <option value="PLANNED" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Planned</option>
+                    <option value="ACTIVE" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Active</option>
+                    <option value="ON_HOLD" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">On Hold</option>
+                    <option value="COMPLETED" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Completed</option>
+                    <option value="CANCELLED" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Cancelled</option>
                   </select>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Assigned Project Manager *</label>
+              <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Assigned Project Manager *</label>
               <div className="relative group">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] pointer-events-none">
                   <FaUserTie className="text-sm" />
                 </span>
                 <select
                   required
                   {...register("assigned_manager_id", { required: "Manager assignment is required" })}
-                  className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-white/5 rounded-2xl text-sm text-white outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 cursor-pointer transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 cursor-pointer transition-all focus:bg-[var(--bg-secondary)]"
                 >
-                  <option value="" disabled className="bg-slate-950 text-slate-400">Select Supervisor</option>
+                  <option value="" disabled className="bg-[var(--bg-secondary)] text-[var(--text-secondary)]">Select Supervisor</option>
                   {managers?.map((m) => (
-                    <option key={m.id} value={m.id} className="bg-slate-950 text-slate-200">
+                    <option key={m.id} value={m.id} className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">
                       {m.full_name} ({m.email})
                     </option>
                   ))}
@@ -247,9 +247,9 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Total Budget (₹)</label>
+                <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Total Budget (₹)</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-blue-400 transition-colors font-bold text-sm">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors font-bold text-sm">
                     ₹
                   </span>
                   <input
@@ -260,12 +260,7 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                       required: "Budget is required",
                       min: { value: 0, message: "Budget must be positive" } 
                     })}
-                    onKeyPress={(e) => {
-                      if (/[^0-9.]/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
-                    className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/5 rounded-2xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-white/[0.07] transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all"
                   />
                 </div>
                 {errors.budget && (
@@ -274,9 +269,9 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Blueprint Progress (%)</label>
+                <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Blueprint Progress (%)</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-blue-400 transition-colors">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors">
                     <FaChartLine className="text-sm" />
                   </span>
                   <input
@@ -288,12 +283,7 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                       min: { value: 0, message: "Min limit is 0" },
                       max: { value: 100, message: "Max limit is 100" },
                     })}
-                    onKeyPress={(e) => {
-                      if (/[^0-9]/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
-                    className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/5 rounded-2xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-white/[0.07] transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all"
                   />
                 </div>
                 {errors.completion_percentage && (
@@ -303,11 +293,11 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+            <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-color)]">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 font-semibold rounded-2xl text-xs transition-colors cursor-pointer"
+                className="px-5 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] font-semibold rounded-2xl text-xs transition-colors cursor-pointer"
               >
                 Cancel
               </button>

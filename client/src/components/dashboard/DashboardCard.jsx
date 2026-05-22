@@ -12,15 +12,15 @@ function DashboardCard({ title, value, icon, description, trend }) {
 
       <div className="flex justify-between items-start">
         <div className="space-y-2">
-          <p className="text-sm font-semibold tracking-wider text-slate-400 uppercase">
+          <p className="text-sm font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
             {title}
           </p>
-          <h2 className="text-3xl font-extrabold text-white tracking-tight text-glow">
+          <h2 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">
             {value}
           </h2>
         </div>
 
-        <div className="p-3 bg-white/5 border border-white/5 rounded-xl text-2xl text-blue-400 shadow-sm">
+        <div className="p-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl text-2xl text-[var(--accent-blue)] shadow-sm">
           {icon}
         </div>
       </div>
@@ -33,13 +33,13 @@ function DashboardCard({ title, value, icon, description, trend }) {
                 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
                 : trend.type === "negative" 
                 ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                : "bg-slate-500/10 text-slate-400 border border-slate-500/20"
+                : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border border-[var(--border-color)]"
             }`}>
               {trend.value}
             </span>
           )}
           {description && (
-            <span className="text-slate-400 font-medium">
+            <span className="text-[var(--text-secondary)] font-medium">
               {description}
             </span>
           )}

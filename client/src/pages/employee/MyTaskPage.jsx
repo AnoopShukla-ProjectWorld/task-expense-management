@@ -58,13 +58,13 @@ function MyTaskPage() {
   };
 
   const getPriorityBadge = (priority) => {
-    const badges = {
-      CRITICAL: "bg-red-50 text-red-700 border-red-200",
-      HIGH: "bg-orange-50 text-orange-700 border-orange-200",
-      MEDIUM: "bg-blue-50 text-blue-700 border-blue-200",
-      LOW: "bg-gray-50 text-gray-700 border-gray-200",
+    const colors = {
+      CRITICAL: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
+      HIGH: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+      MEDIUM: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+      LOW: "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
     };
-    return badges[priority] || "bg-gray-50 text-gray-700 border-gray-200";
+    return colors[priority] || "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20";
   };
 
   const getStatusIcon = (taskStatus) => {
@@ -72,11 +72,11 @@ function MyTaskPage() {
       case "COMPLETED":
         return <FaCheckCircle className="text-emerald-500 text-lg" />;
       case "IN_PROGRESS":
-        return <FaSpinner className="text-blue-500 text-lg animate-spin" />;
+        return <FaSpinner className="text-[var(--accent-blue)] text-lg animate-spin" />;
       case "ON_HOLD":
         return <FaClock className="text-amber-500 text-lg" />;
       default:
-        return <FaClock className="text-gray-400 text-lg" />;
+        return <FaClock className="text-[var(--text-secondary)] text-lg" />;
     }
   };
 
@@ -116,15 +116,15 @@ function MyTaskPage() {
       title: "Progress Meter",
       render: (row) => (
         <div className="flex items-center gap-3">
-          <div className="w-24 bg-gray-150 rounded-full h-2 border border-gray-200/50">
+          <div className="w-24 bg-[var(--text-secondary)]/10 rounded-full h-2 border border-[var(--border-color)]">
             <div
               className={`h-2 rounded-full transition-all duration-300 ${
-                row.status === "COMPLETED" ? "bg-emerald-500" : "bg-blue-600"
+                row.status === "COMPLETED" ? "bg-emerald-500" : "bg-[var(--accent-blue)]"
               }`}
               style={{ width: `${row.completion_percentage}%` }}
             />
           </div>
-          <span className="text-xs font-bold text-gray-600">{row.completion_percentage}%</span>
+          <span className="text-xs font-bold text-[var(--text-secondary)]">{row.completion_percentage}%</span>
         </div>
       ),
     },
@@ -139,13 +139,13 @@ function MyTaskPage() {
               setStatus(row.status || "PENDING");
               setProgress(row.completion_percentage || 0);
             }}
-            className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 border border-blue-150 cursor-pointer"
+            className="px-3 py-1.5 bg-[var(--accent-blue)]/10 hover:bg-[var(--accent-blue)]/20 text-[var(--accent-blue)] rounded-xl text-xs font-bold transition-all flex items-center gap-1 border border-[var(--accent-blue)]/20 hover:border-[var(--accent-blue)]/40 cursor-pointer"
           >
             <FaEdit /> Log Progress
           </button>
           <button
             onClick={() => setViewItem(row)}
-            className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 border border-indigo-150 cursor-pointer"
+            className="px-3 py-1.5 bg-[var(--accent-purple)]/10 hover:bg-[var(--accent-purple)]/20 text-[var(--accent-purple)] rounded-xl text-xs font-bold transition-all flex items-center gap-1 border border-[var(--accent-purple)]/20 hover:border-[var(--accent-purple)]/40 cursor-pointer"
           >
             <FaComment /> Discuss
           </button>
@@ -157,8 +157,10 @@ function MyTaskPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">My Tasks</h1>
-        <p className="text-gray-500">Track milestones and update completion progress of your delegated assignments</p>
+        <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)]">
+          My Tasks
+        </h1>
+        <p className="text-[var(--text-secondary)] text-sm mt-1">Track milestones and update completion progress of your delegated assignments</p>
       </div>
 
       {myTasks.length === 0 ? (
@@ -177,26 +179,26 @@ function MyTaskPage() {
 
       {updateItem && (
         <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in fade-in zoom-in duration-200">
+          <div className="glass-panel rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Log Task Progress</h2>
+              <h2 className="text-lg font-bold text-[var(--text-primary)]">Log Task Progress</h2>
               <button
                 type="button"
                 onClick={() => setUpdateItem(null)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
               >
                 <FaTimes />
               </button>
             </div>
 
-            <div className="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100/50">
-              <span className="text-2xs font-semibold text-gray-400 uppercase">Task Name</span>
-              <p className="font-bold text-gray-700 leading-tight mt-0.5">{updateItem.title}</p>
+            <div className="bg-[var(--bg-primary)]/40 rounded-xl p-3 mb-4 border border-[var(--border-color)]">
+              <span className="text-2xs font-semibold text-[var(--text-secondary)] uppercase">Task Name</span>
+              <p className="font-bold text-[var(--text-primary)] leading-tight mt-0.5">{updateItem.title}</p>
             </div>
 
             <form onSubmit={handleUpdateSubmit} className="space-y-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-gray-700">Workflow Status</label>
+                <label className="text-sm font-bold text-[var(--text-secondary)]">Workflow Status</label>
                 <select
                   value={status}
                   onChange={(e) => {
@@ -206,20 +208,20 @@ function MyTaskPage() {
                       setProgress(100);
                     }
                   }}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+                  className="w-full rounded-xl border border-[var(--border-color)] px-4 py-2.5 outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 text-sm bg-[var(--bg-primary)]/40 text-[var(--text-primary)]"
                 >
-                  <option value="PENDING">Pending</option>
-                  <option value="IN_PROGRESS">In Progress</option>
-                  <option value="COMPLETED">Completed</option>
-                  <option value="ON_HOLD">On Hold</option>
-                  <option value="CANCELLED">Cancelled</option>
+                  <option className="bg-[var(--bg-primary)] text-[var(--text-primary)]" value="PENDING">Pending</option>
+                  <option className="bg-[var(--bg-primary)] text-[var(--text-primary)]" value="IN_PROGRESS">In Progress</option>
+                  <option className="bg-[var(--bg-primary)] text-[var(--text-primary)]" value="COMPLETED">Completed</option>
+                  <option className="bg-[var(--bg-primary)] text-[var(--text-primary)]" value="ON_HOLD">On Hold</option>
+                  <option className="bg-[var(--bg-primary)] text-[var(--text-primary)]" value="CANCELLED">Cancelled</option>
                 </select>
               </div>
 
               <div className="flex flex-col gap-2">
-                <div className="flex justify-between text-sm font-bold text-gray-750">
-                  <label>Completion Level</label>
-                  <span className="text-blue-600">{progress}%</span>
+                <div className="flex justify-between text-sm font-bold text-[var(--text-secondary)]">
+                  <label className="text-[var(--text-primary)]">Completion Level</label>
+                  <span className="text-[var(--accent-blue)]">{progress}%</span>
                 </div>
                 <input
                   type="range"
@@ -236,22 +238,22 @@ function MyTaskPage() {
                       setStatus("IN_PROGRESS");
                     }
                   }}
-                  className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none"
+                  className="w-full h-1.5 bg-[var(--text-secondary)]/20 rounded-lg appearance-none cursor-pointer accent-[var(--accent-blue)] focus:outline-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--border-color)]">
                 <button
                   type="button"
                   onClick={() => setUpdateItem(null)}
-                  className="px-4 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 text-gray-600 font-semibold text-sm transition-colors"
+                  className="px-4 py-2.5 border border-[var(--border-color)] rounded-xl hover:bg-[var(--bg-primary)]/80 text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-semibold text-sm transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-750 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-blue-500/10 disabled:opacity-50"
+                  className="px-5 py-2.5 bg-[var(--accent-blue)] hover:bg-[var(--accent-blue)]/80 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-[var(--accent-blue)]/10 disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? "Saving..." : "Save Progress"}
                 </button>

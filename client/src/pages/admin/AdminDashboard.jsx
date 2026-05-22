@@ -84,14 +84,14 @@ function AdminDashboard() {
       {/* Dynamic Dashboard Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+          <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)]">
             Admin Console
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Welcome back, <span className="text-blue-400 font-semibold">{user?.fullName}</span> • Full System Visibility Authorized.
+          <p className="text-[var(--text-secondary)] text-sm mt-1 font-medium">
+            Welcome back, <span className="text-blue-650 dark:text-blue-400 font-bold">{user?.fullName}</span> • Full System Visibility Authorized.
           </p>
         </div>
-        <div className="flex gap-3 text-xs bg-white/5 border border-white/5 rounded-2xl px-4 py-2 text-slate-400 items-center">
+        <div className="flex gap-3 text-xs bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl px-4 py-2 text-[var(--text-secondary)] items-center font-bold shadow-sm">
           <FaCircle className="text-emerald-500 animate-pulse" />
           <span>Active Sessions: <strong>{stats?.active_sessions ?? 1}</strong></span>
         </div>
@@ -135,16 +135,16 @@ function AdminDashboard() {
         <motion.div variants={itemVariants} className="glass-panel p-6 rounded-2xl lg:col-span-2">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-lg font-bold text-white tracking-wide">Expense Outflows by Category</h3>
-              <p className="text-xs text-slate-400">Aggregated dynamic metrics for the active fiscal cycle</p>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">Expense Outflows by Category</h3>
+              <p className="text-xs text-[var(--text-secondary)] font-medium">Aggregated dynamic metrics for the active fiscal cycle</p>
             </div>
-            <div className="px-3 py-1 text-xs rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-400 font-semibold">
+            <div className="px-3 py-1 text-xs rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 font-bold">
               Live Chart
             </div>
           </div>
           <div className="h-[300px]">
             {expenseChartData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-slate-500 text-sm">
+              <div className="h-full flex items-center justify-center text-[var(--text-secondary)] text-sm font-medium">
                 No expense analytics data available currently.
               </div>
             ) : (
@@ -156,14 +156,14 @@ function AdminDashboard() {
                       <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
+                  <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={11} tickLine={false} />
+                  <YAxis stroke="var(--text-secondary)" fontSize={11} tickLine={false} />
                   <Tooltip 
                     contentStyle={{ 
-                      background: "rgba(15, 23, 42, 0.9)", 
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "var(--bg-secondary)", 
+                      border: "1px solid var(--border-color)",
                       borderRadius: "12px",
-                      color: "#fff"
+                      color: "var(--text-primary)"
                     }} 
                   />
                   <Area type="monotone" dataKey="amount" stroke="#3b82f6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorAmount)" />
@@ -176,12 +176,12 @@ function AdminDashboard() {
         {/* Project Metrics Summary Card */}
         <motion.div variants={itemVariants} className="glass-panel p-6 rounded-2xl flex flex-col justify-between">
           <div>
-            <h3 className="text-lg font-bold text-white tracking-wide mb-1">Status Allocation</h3>
-            <p className="text-xs text-slate-400 mb-6">Distribution profiles of workflows and projects</p>
+            <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide mb-1">Status Allocation</h3>
+            <p className="text-xs text-[var(--text-secondary)] font-medium mb-6">Distribution profiles of workflows and projects</p>
           </div>
           <div className="h-[200px] relative flex items-center justify-center">
             {projectStatusData.length === 0 ? (
-              <div className="text-slate-500 text-sm">No status allocations</div>
+              <div className="text-[var(--text-secondary)] text-sm font-medium">No status allocations</div>
             ) : (
               <>
                 <ResponsiveContainer width="100%" height="100%">
@@ -201,24 +201,24 @@ function AdminDashboard() {
                     </Pie>
                     <Tooltip 
                       contentStyle={{ 
-                        background: "rgba(15, 23, 42, 0.9)", 
-                        border: "1px solid rgba(255,255,255,0.08)",
+                        background: "var(--bg-secondary)", 
+                        border: "1px solid var(--border-color)",
                         borderRadius: "12px",
-                        color: "#fff"
+                        color: "var(--text-primary)"
                       }} 
                     />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute flex flex-col items-center justify-center">
-                  <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Completes</span>
-                  <span className="text-2xl font-black text-white text-glow">{stats?.completed_tasks ?? 0}</span>
+                  <span className="text-2xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Completes</span>
+                  <span className="text-2xl font-black text-[var(--text-primary)] text-glow">{stats?.completed_tasks ?? 0}</span>
                 </div>
               </>
             )}
           </div>
           <div className="grid grid-cols-2 gap-2 mt-4 text-[11px]">
             {projectStatusData.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-2 text-slate-300">
+              <div key={idx} className="flex items-center gap-2 text-[var(--text-secondary)] font-medium">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
                 <span className="truncate">{item.name} ({item.value})</span>
               </div>
@@ -233,30 +233,30 @@ function AdminDashboard() {
         <motion.div variants={itemVariants} className="glass-panel p-6 rounded-2xl">
           <div className="flex justify-between items-center mb-5">
             <div className="flex items-center gap-2.5">
-              <FaHistory className="text-blue-400 text-lg" />
-              <h3 className="text-lg font-bold text-white tracking-wide">Enterprise Audit Feed</h3>
+              <FaHistory className="text-blue-500 dark:text-blue-400 text-lg" />
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">Enterprise Audit Feed</h3>
             </div>
-            <span className="text-[10px] text-slate-400 tracking-widest uppercase">System Activity</span>
+            <span className="text-[10px] text-[var(--text-secondary)] tracking-widest uppercase font-bold">System Activity</span>
           </div>
 
           <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 scrollbar-thin">
             {auditLogs.length === 0 ? (
-              <div className="py-12 text-center text-sm text-slate-500">
+              <div className="py-12 text-center text-sm text-[var(--text-secondary)] font-medium">
                 No system activity or audit records found.
               </div>
             ) : (
               auditLogs.slice(0, 10).map((log) => (
-                <div key={log.id} className="flex items-start gap-4 p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all">
-                  <div className="p-2.5 rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-400 text-xs">
+                <div key={log.id} className="flex items-start gap-4 p-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl hover:bg-[var(--bg-hover)] transition-all">
+                  <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs">
                     <FaNetworkWired />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
-                      <p className="text-sm font-bold text-white truncate">{log.action}</p>
-                      <span className="text-[10px] text-slate-500 whitespace-nowrap">{new Date(log.created_at).toLocaleTimeString()}</span>
+                      <p className="text-sm font-bold text-[var(--text-primary)] truncate">{log.action}</p>
+                      <span className="text-[10px] text-[var(--text-secondary)] font-medium whitespace-nowrap">{new Date(log.created_at).toLocaleTimeString()}</span>
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">{log.details}</p>
-                    <div className="flex justify-between items-center mt-2 text-[10px] text-slate-500">
+                    <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-medium">{log.details}</p>
+                    <div className="flex justify-between items-center mt-2 text-[10px] text-[var(--text-secondary)]/80">
                       <span>IP: {log.ip_address || "Internal"}</span>
                       <span>User ID: {log.user_id}</span>
                     </div>
@@ -271,15 +271,15 @@ function AdminDashboard() {
         <motion.div variants={itemVariants} className="glass-panel p-6 rounded-2xl">
           <div className="flex justify-between items-center mb-5">
             <div className="flex items-center gap-2.5">
-              <FaUserShield className="text-indigo-400 text-lg" />
-              <h3 className="text-lg font-bold text-white tracking-wide">Staff Productivity Matrix</h3>
+              <FaUserShield className="text-indigo-500 dark:text-indigo-400 text-lg" />
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">Staff Productivity Matrix</h3>
             </div>
-            <span className="text-[10px] text-slate-400 tracking-widest uppercase">Performance Index</span>
+            <span className="text-[10px] text-[var(--text-secondary)] tracking-widest uppercase font-bold">Performance Index</span>
           </div>
 
           <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 scrollbar-thin">
             {productivityStats.length === 0 ? (
-              <div className="py-12 text-center text-sm text-slate-500">
+              <div className="py-12 text-center text-sm text-[var(--text-secondary)] font-medium">
                 No user statistics found in active workspaces.
               </div>
             ) : (
@@ -289,32 +289,32 @@ function AdminDashboard() {
                   : 0;
 
                 return (
-                  <div key={item.id} className="p-4 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all space-y-3">
+                  <div key={item.id} className="p-4 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl hover:bg-[var(--bg-hover)] transition-all space-y-3">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold uppercase">
                           {item.full_name.charAt(0)}
                         </div>
                         <div>
-                          <h4 className="text-sm font-bold text-white">{item.full_name}</h4>
-                          <p className="text-[10px] text-slate-500">Rank #{idx + 1}</p>
+                          <h4 className="text-sm font-bold text-[var(--text-primary)]">{item.full_name}</h4>
+                          <p className="text-[10px] text-[var(--text-secondary)] font-medium">Rank #{idx + 1}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-sm font-black text-white text-glow">{percent}%</span>
-                        <p className="text-[10px] text-slate-500">Efficiency</p>
+                        <span className="text-sm font-black text-[var(--text-primary)] text-glow">{percent}%</span>
+                        <p className="text-[10px] text-[var(--text-secondary)] font-semibold">Efficiency</p>
                       </div>
                     </div>
                     
                     {/* Progress Bar container */}
                     <div className="space-y-1.5">
-                      <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-[var(--bg-hover)] rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-500" 
+                           className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-500" 
                           style={{ width: `${percent}%` }}
                         />
                       </div>
-                      <div className="flex justify-between text-[10px] text-slate-500">
+                      <div className="flex justify-between text-[10px] text-[var(--text-secondary)] font-medium">
                         <span>Tasks Completed: <strong>{item.completed_tasks}</strong></span>
                         <span>Total Assigned: <strong>{item.total_tasks}</strong></span>
                       </div>

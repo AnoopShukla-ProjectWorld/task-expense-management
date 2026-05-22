@@ -10,13 +10,8 @@ function ExpenseAnalyticsChart({
   data,
 }) {
   return (
-    <div
-      className="
-        bg-white rounded-2xl
-        shadow-sm p-6
-      "
-    >
-      <h2 className="text-xl font-bold mb-5">
+    <div className="glass-panel rounded-2xl p-6 shadow-lg">
+      <h2 className="text-xl font-bold mb-5 text-[var(--text-primary)]">
         Expense Trends
       </h2>
 
@@ -25,11 +20,31 @@ function ExpenseAnalyticsChart({
         height={300}
       >
         <BarChart data={data}>
-          <XAxis dataKey="month" />
+          <XAxis 
+            dataKey="month" 
+            stroke="var(--text-secondary)" 
+            fontSize={12} 
+            tickLine={false} 
+            axisLine={false} 
+          />
 
-          <Tooltip />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: "var(--bg-secondary)", 
+              borderColor: "var(--border-color)", 
+              borderRadius: "12px", 
+              color: "var(--text-primary)",
+              backdropFilter: "blur(16px)"
+            }}
+            labelStyle={{ color: "var(--text-primary)", fontWeight: "bold" }}
+            itemStyle={{ color: "var(--accent-blue)" }}
+          />
 
-          <Bar dataKey="amount" />
+          <Bar 
+            dataKey="amount" 
+            fill="var(--accent-blue)" 
+            radius={[4, 4, 0, 0]} 
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>

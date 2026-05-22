@@ -4,23 +4,35 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaUser, FaEnvelope, FaIdCard, FaPhone, FaLock, FaUserTag } from "react-icons/fa";
 
 function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm();
+
+  const parsePhone = (phoneStr) => {
+    if (!phoneStr) return { countryCode: "+91", localNumber: "" };
+    if (phoneStr.startsWith("+91")) return { countryCode: "+91", localNumber: phoneStr.slice(3) };
+    if (phoneStr.startsWith("+1")) return { countryCode: "+1", localNumber: phoneStr.slice(2) };
+    if (phoneStr.startsWith("+44")) return { countryCode: "+44", localNumber: phoneStr.slice(3) };
+    if (phoneStr.startsWith("+971")) return { countryCode: "+971", localNumber: phoneStr.slice(4) };
+    return { countryCode: "+91", localNumber: phoneStr };
+  };
 
   useEffect(() => {
     if (initialData) {
+      const parsed = parsePhone(initialData.phone_number);
       reset({
         full_name: initialData.full_name,
         email: initialData.email,
         employee_id: initialData.employee_id,
-        phone_number: initialData.phone_number || "",
+        phone_country: parsed.countryCode,
+        phone_local: parsed.localNumber,
         role_id: initialData.role_id,
       });
     } else {
       reset({
         full_name: "",
         email: "",
-        employee_id: "",
-        phone_number: "",
+        employee_id: "Auto-Generated",
+        phone_country: "+91",
+        phone_local: "",
         password: "",
         role_id: "",
       });
@@ -30,8 +42,11 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
   if (!isOpen) return null;
 
   const handleFormSubmit = (data) => {
+    const { phone_country, phone_local, ...rest } = data;
+    const combinedPhone = phone_local ? `${phone_country}${phone_local}` : "";
     const payload = {
-      ...data,
+      ...rest,
+      phone_number: combinedPhone,
       role_id: parseInt(data.role_id),
       department_id: data.department_id
         ? parseInt(data.department_id)
@@ -58,7 +73,7 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.95, y: 15, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="w-full max-w-lg glass-panel rounded-3xl p-6.5 border border-white/10 shadow-2xl relative overflow-hidden z-10"
+          className="w-full max-w-lg glass-panel rounded-3xl p-6.5 border border-[var(--border-color)] shadow-2xl relative overflow-hidden z-10"
         >
           {/* Decorative ambient background glow */}
           <div className="absolute -left-12 -top-12 w-32 h-32 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
@@ -66,14 +81,14 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
           {/* Header */}
           <div className="flex justify-between items-center mb-6 relative">
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+              <h2 className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)]">
                 {initialData ? "Edit Fleet Member" : "Enlist New User"}
               </h2>
-              <p className="text-xs text-slate-400 mt-1">Configure profile and core role permissions</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-1">Configure profile and core role permissions</p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              className="p-2 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all cursor-pointer"
             >
               <FaTimes className="text-sm" />
             </button>
@@ -82,9 +97,9 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
           {/* Form */}
           <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 relative">
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Full Name *</label>
+              <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Full Name *</label>
               <div className="relative group">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-blue-400 transition-colors">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors">
                   <FaUser className="text-sm" />
                 </span>
                 <input
@@ -93,16 +108,11 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                   {...register("full_name", {
                     required: "Full name is required",
                     pattern: {
-                      value: /^[a-zA-Z\s]+$/,
-                      message: "Name can only contain letters and spaces",
+                      value: /^[a-zA-Z\s'-]+$/,
+                      message: "Name can only contain letters, spaces, hyphens, and apostrophes",
                     },
                   })}
-                  onKeyPress={(e) => {
-                    if (/[0-9]/.test(e.key)) {
-                      e.preventDefault();
-                    }
-                  }}
-                  className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${errors.full_name ? "border-rose-500/50" : "border-white/5"} rounded-2xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-white/[0.07] transition-all`}
+                  className={`w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border ${errors.full_name ? "border-rose-500/50" : "border-[var(--border-color)]"} rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all`}
                 />
               </div>
               {errors.full_name && (
@@ -111,9 +121,9 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Email *</label>
+              <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Email *</label>
               <div className="relative group">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-blue-400 transition-colors">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors">
                   <FaEnvelope className="text-sm" />
                 </span>
                 <input
@@ -126,7 +136,7 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                       message: "Enter a valid email address",
                     },
                   })}
-                  className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${errors.email ? "border-rose-500/50" : "border-white/5"} rounded-2xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-white/[0.07] transition-all`}
+                  className={`w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border ${errors.email ? "border-rose-500/50" : "border-[var(--border-color)]"} rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all`}
                 />
               </div>
               {errors.email && (
@@ -134,56 +144,85 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Employee ID *</label>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col gap-1 sm:w-[150px] sm:shrink-0">
+                <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Employee ID</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-blue-400 transition-colors">
-                    <FaIdCard className="text-sm" />
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[var(--text-secondary)]">
+                    <FaIdCard className="text-xs" />
                   </span>
                   <input
                     type="text"
-                    placeholder="EMP088"
-                    {...register("employee_id", {
-                      required: "Employee ID is required",
-                    })}
-                    className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${errors.employee_id ? "border-rose-500/50" : "border-white/5"} rounded-2xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-white/[0.07] transition-all`}
+                    readOnly
+                    {...register("employee_id")}
+                    className="w-full pl-9 pr-3 py-3 bg-slate-100/50 dark:bg-slate-900/30 border border-[var(--border-color)] rounded-2xl text-xs text-slate-500 dark:text-slate-400 cursor-not-allowed outline-none font-mono font-bold animate-pulse-slow text-center"
                   />
                 </div>
-                {errors.employee_id && (
-                  <p className="text-[11px] text-rose-400 font-semibold">{errors.employee_id.message}</p>
-                )}
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Phone Number</label>
-                <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-blue-400 transition-colors">
-                    <FaPhone className="text-sm" />
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="+91 9999999999"
-                    {...register("phone_number", {
-                      pattern: {
-                        value: /^[0-9+\-\s()]*$/,
-                        message: "Invalid phone number format",
-                      },
-                    })}
-                    className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${errors.phone_number ? "border-rose-500/50" : "border-white/5"} rounded-2xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-white/[0.07] transition-all`}
-                  />
+              <div className="flex flex-col gap-1 flex-grow">
+                <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Phone Number</label>
+                <div className="flex gap-2">
+                  <div className="relative w-[90px] shrink-0">
+                    <select
+                      {...register("phone_country")}
+                      className="w-full pl-2 pr-6 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-xs font-bold text-[var(--text-primary)] outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 cursor-pointer appearance-none"
+                    >
+                      <option value="+91" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">🇮🇳 +91</option>
+                      <option value="+1" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">🇺🇸 +1</option>
+                      <option value="+44" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">🇬🇧 +44</option>
+                      <option value="+971" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">🇦🇪 +971</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-[var(--text-secondary)]">
+                      <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div className="relative flex-grow group">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors">
+                      <FaPhone className="text-xs" />
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="9999999999"
+                      {...register("phone_local", {
+                        validate: (val) => {
+                          if (!val) return true; // Optional field
+                          if (/[^0-9]/.test(val)) return "Phone number must contain only digits";
+                          
+                          const country = watch("phone_country");
+                          if (country === "+91") {
+                            return /^[6-9]\d{9}$/.test(val) || "India number must be 10 digits starting 6-9";
+                          }
+                          if (country === "+1") {
+                            return /^\d{10}$/.test(val) || "USA/Canada number must be 10 digits";
+                          }
+                          if (country === "+44") {
+                            return /^7\d{9}$/.test(val) || "UK number must be 10 digits starting with 7";
+                          }
+                          if (country === "+971") {
+                            return /^5\d{8}$/.test(val) || "UAE number must be 9 digits starting with 5";
+                          }
+                          return true;
+                        }
+                      })}
+                      className={`w-full pl-9 pr-3 py-3 bg-[var(--bg-tertiary)] border ${errors.phone_local ? "border-rose-500/50" : "border-[var(--border-color)]"} rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all`}
+                    />
+                  </div>
                 </div>
-                {errors.phone_number && (
-                  <p className="text-[11px] text-rose-400 font-semibold">{errors.phone_number.message}</p>
+                {errors.phone_local && (
+                  <p className="text-[11px] text-rose-400 font-semibold">{errors.phone_local.message}</p>
                 )}
               </div>
             </div>
 
             {!initialData && (
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Secure Password *</label>
+                <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Secure Password *</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-blue-400 transition-colors">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors">
                     <FaLock className="text-sm" />
                   </span>
                   <input
@@ -193,7 +232,7 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                       required: "Password is required",
                       minLength: { value: 8, message: "Password must be at least 8 characters" },
                     })}
-                    className={`w-full pl-11 pr-4 py-3 bg-white/5 border ${errors.password ? "border-rose-500/50" : "border-white/5"} rounded-2xl text-sm text-white placeholder-slate-500 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-white/[0.07] transition-all`}
+                    className={`w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border ${errors.password ? "border-rose-500/50" : "border-[var(--border-color)]"} rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all`}
                   />
                 </div>
                 {errors.password && (
@@ -203,19 +242,18 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
             )}
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">System Authorization Role *</label>
+              <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">System Authorization Role *</label>
               <div className="relative group">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-blue-400 transition-colors pointer-events-none">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors pointer-events-none">
                   <FaUserTag className="text-sm" />
                 </span>
                 <select
                   {...register("role_id", { required: "Access role is required" })}
-                  className={`w-full pl-11 pr-4 py-3 bg-slate-900 border ${errors.role_id ? "border-rose-500/50" : "border-white/5"} rounded-2xl text-sm text-white outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 cursor-pointer transition-all`}
+                  className={`w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border ${errors.role_id ? "border-rose-500/50" : "border-[var(--border-color)]"} rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 cursor-pointer transition-all focus:bg-[var(--bg-secondary)]`}
                 >
-                  <option value="" disabled className="bg-slate-950 text-slate-400">Select Access Tier</option>
-                  <option value="1" className="bg-slate-950 text-slate-200">Admin (Full Control)</option>
-                  <option value="2" className="bg-slate-950 text-slate-200">Manager (Project Lead)</option>
-                  <option value="3" className="bg-slate-950 text-slate-200">Employee (Operational Staff)</option>
+                  <option value="" disabled className="bg-[var(--bg-secondary)] text-[var(--text-secondary)]">Select Access Tier</option>
+                  <option value="2" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Manager (Project Lead)</option>
+                  <option value="3" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Employee (Operational Staff)</option>
                 </select>
               </div>
               {errors.role_id && (
@@ -224,11 +262,11 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+            <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-color)]">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 font-semibold rounded-2xl text-xs transition-colors cursor-pointer"
+                className="px-5 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] font-semibold rounded-2xl text-xs transition-colors cursor-pointer"
               >
                 Cancel
               </button>

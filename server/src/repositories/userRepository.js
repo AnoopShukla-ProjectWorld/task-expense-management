@@ -266,6 +266,29 @@ const restoreUser = async (userId) => {
 };
 
 
+// ============================================
+// GET NEXT EMPLOYEE ID (AUTOMATIC SEQUENCE)
+// ============================================
+
+const getNextEmployeeId = async () => {
+  const result = await pool.request().query(`
+    SELECT TOP 1 employee_id 
+    FROM users 
+    WHERE employee_id LIKE 'EMP-%' 
+    ORDER BY CAST(SUBSTRING(employee_id, 5, LEN(employee_id)) AS INT) DESC
+  `);
+  
+  if (result.recordset.length === 0) {
+    return 'EMP-007';
+  }
+  
+  const lastIdStr = result.recordset[0].employee_id;
+  const lastNum = parseInt(lastIdStr.replace('EMP-', ''), 10);
+  const nextNum = isNaN(lastNum) ? 7 : lastNum + 1;
+  return 'EMP-' + String(nextNum).padStart(3, '0');
+};
+
+
 module.exports = {
   createUser,
   findUserByEmail,
@@ -274,4 +297,5 @@ module.exports = {
   updateUser,
   softDeleteUser,
   restoreUser,
+  getNextEmployeeId,
 };

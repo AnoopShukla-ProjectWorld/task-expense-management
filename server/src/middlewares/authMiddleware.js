@@ -26,7 +26,7 @@ const authMiddleware = asyncHandler(
     let token;
 
     // ============================================
-    // GET ACCESS TOKEN FROM COOKIES
+    // GET ACCESS TOKEN FROM COOKIES OR AUTHORIZATION HEADER
     // ============================================
 
     if (
@@ -34,6 +34,11 @@ const authMiddleware = asyncHandler(
       req.cookies.accessToken
     ) {
       token = req.cookies.accessToken;
+    } else if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer ")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
     }
 
     // ============================================

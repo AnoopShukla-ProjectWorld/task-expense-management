@@ -15,17 +15,21 @@ function FileUpload({
       {...getRootProps()}
       className="
         border-2 border-dashed
-        border-gray-300 rounded-2xl
+        border-[var(--border-color)] hover:border-blue-500/50 rounded-2xl
         p-10 text-center
-        cursor-pointer bg-white
+        cursor-pointer bg-[var(--bg-primary)]/45 hover:bg-[var(--bg-primary)]/70
+        transition-all duration-300
       "
     >
       <input
         {...getInputProps()}
       />
 
-      <p>
-        Drag & drop files here
+      <p className="text-sm font-semibold text-[var(--text-primary)]">
+        Drag & drop attachments here
+      </p>
+      <p className="text-xs text-[var(--text-secondary)]/70 mt-1">
+        or click to browse files from your computer
       </p>
     </div>
   );

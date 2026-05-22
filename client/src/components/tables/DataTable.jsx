@@ -52,10 +52,10 @@ function DataTable({
   };
 
   const getSortIcon = (key) => {
-    if (sortKey !== key) return <FaSort className="text-slate-500 hover:text-slate-300 transition-colors" />;
+    if (sortKey !== key) return <FaSort className="text-[var(--text-secondary)]/70 hover:text-[var(--text-primary)] transition-colors" />;
     return sortOrder === "asc"
-      ? <FaSortUp className="text-blue-400" />
-      : <FaSortDown className="text-blue-400" />;
+      ? <FaSortUp className="text-[var(--accent-blue)]" />
+      : <FaSortDown className="text-[var(--accent-blue)]" />;
   };
 
   if (loading) return <TableLoader />;
@@ -67,13 +67,13 @@ function DataTable({
       <div className="overflow-x-auto w-full">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-white/[0.02] border-b border-[var(--border-color)] text-[var(--text-secondary)] font-bold text-xs uppercase tracking-wider">
+            <tr className="bg-[var(--bg-tertiary)] border-b border-[var(--border-color)] text-[var(--text-secondary)] font-bold text-xs uppercase tracking-wider">
               <th className="px-6 py-4.5 w-12 text-center">
                 <input
                   type="checkbox"
                   checked={selectedRows.length === data.length && data.length > 0}
                   onChange={handleSelectAll}
-                  className="w-4 h-4 rounded border-[var(--border-color)] bg-white/5 text-blue-500 focus:ring-blue-500/20 focus:ring-2 cursor-pointer transition-all"
+                  className="w-4 h-4 rounded border-[var(--border-color)] bg-[var(--bg-secondary)] text-blue-500 focus:ring-blue-500/20 focus:ring-2 cursor-pointer transition-all"
                 />
               </th>
 
@@ -81,7 +81,7 @@ function DataTable({
                 <th
                   key={column.key}
                   onClick={() => handleSort(column.key)}
-                  className="px-6 py-4.5 text-left font-bold select-none cursor-pointer hover:bg-white/[0.02] transition-colors"
+                  className="px-6 py-4.5 text-left font-bold select-none cursor-pointer hover:bg-[var(--bg-hover)] transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <span>{column.title}</span>
@@ -109,9 +109,9 @@ function DataTable({
                   transition={{ duration: 0.15, delay: Math.min(idx * 0.03, 0.3) }}
                   className={`
                     group text-sm text-[var(--text-primary)]
-                    hover:bg-white/[0.02]
+                    hover:bg-[var(--bg-hover)]
                     transition-all duration-200
-                    ${selectedRows.includes(row.id) ? "bg-blue-600/5 text-white" : ""}
+                    ${selectedRows.includes(row.id) ? "bg-blue-500/10 border-blue-500/20" : ""}
                   `}
                 >
                   <td className="px-6 py-4 text-center">
@@ -119,7 +119,7 @@ function DataTable({
                       type="checkbox"
                       checked={selectedRows.includes(row.id)}
                       onChange={() => handleSelectRow(row.id)}
-                      className="w-4 h-4 rounded border-[var(--border-color)] bg-white/5 text-blue-500 focus:ring-blue-500/20 focus:ring-2 cursor-pointer transition-all"
+                      className="w-4 h-4 rounded border-[var(--border-color)] bg-[var(--bg-secondary)] text-blue-500 focus:ring-blue-500/20 focus:ring-2 cursor-pointer transition-all"
                     />
                   </td>
 
@@ -139,13 +139,13 @@ function DataTable({
                       <div className="flex gap-2">
                         <button
                           onClick={() => onEdit?.(row)}
-                          className="px-3 py-1.5 bg-blue-600/10 border border-blue-500/20 hover:bg-blue-600 text-blue-400 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                          className="px-3 py-1.5 bg-blue-600/10 border border-blue-500/30 dark:border-blue-500/20 hover:bg-blue-600 text-blue-600 dark:text-blue-400 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => onDelete?.(row.id)}
-                          className="px-3 py-1.5 bg-rose-600/10 border border-rose-500/20 hover:bg-rose-600 text-rose-400 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                          className="px-3 py-1.5 bg-rose-600/10 border border-rose-500/30 dark:border-rose-500/20 hover:bg-rose-600 text-rose-600 dark:text-rose-400 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
                         >
                           Delete
                         </button>

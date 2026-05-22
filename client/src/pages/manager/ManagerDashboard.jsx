@@ -110,7 +110,7 @@ function ManagerDashboard() {
       {/* Header banner */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+          <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)]">
             Manager Portal
           </h1>
           <p className="text-slate-400 text-sm mt-1">
@@ -160,7 +160,7 @@ function ManagerDashboard() {
         <motion.div variants={itemVariants} className="glass-panel p-6 rounded-2xl">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-lg font-bold text-white tracking-wide">Project Completion Rates</h3>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">Project Completion Rates</h3>
               <p className="text-xs text-slate-400">Percentage of tasks fully closed out per project</p>
             </div>
           </div>
@@ -196,7 +196,7 @@ function ManagerDashboard() {
         {/* Task Status Distribution chart */}
         <motion.div variants={itemVariants} className="glass-panel p-6 rounded-2xl flex flex-col justify-between">
           <div>
-            <h3 className="text-lg font-bold text-white tracking-wide mb-1">Task Workflows Allocation</h3>
+            <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide mb-1">Task Workflows Allocation</h3>
             <p className="text-xs text-slate-400 mb-6">Status breakdown across team work pipelines</p>
           </div>
           <div className="h-[220px] relative flex items-center justify-center">
@@ -231,7 +231,7 @@ function ManagerDashboard() {
                 </ResponsiveContainer>
                 <div className="absolute flex flex-col items-center justify-center">
                   <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Completed</span>
-                  <span className="text-2xl font-black text-white text-glow">{completedTasks.length}</span>
+                  <span className="text-2xl font-black text-[var(--text-primary)] text-glow">{completedTasks.length}</span>
                 </div>
               </>
             )}
@@ -254,7 +254,7 @@ function ManagerDashboard() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <FaMoneyBill className="text-emerald-400 text-lg" />
-              <h3 className="text-lg font-bold text-white tracking-wide">Expense Approvals Requested</h3>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">Expense Approvals Requested</h3>
             </div>
             <Link to="/manager/expenses" className="text-xs text-blue-400 flex items-center gap-1.5 hover:underline font-semibold">
               <span>View All</span>
@@ -272,7 +272,7 @@ function ManagerDashboard() {
                 <div key={expense.id} className="p-3.5 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all flex justify-between items-center">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-white">₹{Number(expense.amount).toFixed(2)}</span>
+                      <span className="text-sm font-bold text-[var(--text-primary)]">₹{Number(expense.amount).toFixed(2)}</span>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-600/20 text-blue-400 font-semibold border border-blue-500/20">{expense.category}</span>
                     </div>
                     <p className="text-xs text-slate-400">{expense.description}</p>
@@ -299,7 +299,7 @@ function ManagerDashboard() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <FaClock className="text-rose-400 text-lg" />
-              <h3 className="text-lg font-bold text-white tracking-wide">Upcoming Team Deadlines</h3>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">Upcoming Team Deadlines</h3>
             </div>
             <Link to="/manager/tasks" className="text-xs text-blue-400 flex items-center gap-1.5 hover:underline font-semibold">
               <span>Assign Task</span>
@@ -319,7 +319,7 @@ function ManagerDashboard() {
                   <div key={task.id} className="p-3.5 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all flex justify-between items-center">
                     <div className="space-y-1 flex-1 min-w-0 pr-4">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-white truncate">{task.title}</h4>
+                        <h4 className="text-sm font-bold text-[var(--text-primary)] truncate">{task.title}</h4>
                         <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
                           task.priority === "HIGH" 
                             ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" 

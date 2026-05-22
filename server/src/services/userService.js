@@ -38,6 +38,12 @@ const createUserService = async (
     );
   }
 
+  let employeeId = userData.employee_id;
+  if (!employeeId || employeeId.trim() === "" || employeeId === "Auto-Generated") {
+    const { getNextEmployeeId } = require("../repositories/userRepository");
+    employeeId = await getNextEmployeeId();
+  }
+
   const hashedPassword =
     await bcrypt.hash(
       userData.password,
@@ -47,6 +53,7 @@ const createUserService = async (
   const user =
     await createUser({
       ...userData,
+      employee_id: employeeId,
       password_hash:
         hashedPassword,
     });

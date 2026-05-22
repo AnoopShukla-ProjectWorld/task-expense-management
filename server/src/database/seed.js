@@ -12,13 +12,15 @@ async function seed() {
     // 2. Clear Existing Data safely (due to foreign key constraints, we delete in order)
     console.log("🧹 Clearing old data...");
     await pool.request().query(`
+      DELETE FROM expense_attachments;
+      DELETE FROM task_comments;
+      DELETE FROM expenses;
+      DELETE FROM tasks;
+      DELETE FROM project_members;
       DELETE FROM refresh_tokens;
       DELETE FROM sessions;
       DELETE FROM audit_logs;
       DELETE FROM notifications;
-      DELETE FROM expenses;
-      DELETE FROM tasks;
-      DELETE FROM project_members;
       DELETE FROM projects;
       DELETE FROM users WHERE email NOT IN ('system@system.com');
       DELETE FROM departments;
@@ -174,7 +176,8 @@ async function seed() {
       (${userMap['employee1@system.com']}, 'New Task Assigned', 'Database Partitioning Setup has been assigned to you by Vihaan Verma.', 0),
       (${userMap['employee2@system.com']}, 'New Task Assigned', 'UI Design Kit Polish has been assigned to you by Vihaan Verma.', 0),
       (${userMap['manager1@system.com']}, 'New Expense Claim Submitted', 'Aarav Sharma submitted a software expense claim for ₹8,500.', 0),
-      (${userMap['employee1@system.com']}, 'Expense Claim Approved', 'Your AWS software expense claim has been successfully approved.', 1);
+      (${userMap['employee1@system.com']}, 'Expense Claim Approved', 'Your AWS software expense claim has been successfully approved.', 1),
+      (${userMap['employee3@system.com']}, 'Expense Claim Rejected', 'Your Facebook Ads expense claim has been rejected.', 0);
     `);
     console.log("Notifications seeded successfully");
 

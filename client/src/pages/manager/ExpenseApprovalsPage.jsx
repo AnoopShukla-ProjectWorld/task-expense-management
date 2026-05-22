@@ -70,13 +70,13 @@ function ExpenseApprovalsPage() {
 
   const getCategoryBadge = (category) => {
     const badges = {
-      TRAVEL: "bg-blue-50 text-blue-700 border-blue-200",
-      FOOD: "bg-orange-50 text-orange-700 border-orange-200",
-      ACCOMMODATION: "bg-purple-50 text-purple-700 border-purple-200",
-      OFFICE_SUPPLIES: "bg-pink-50 text-pink-700 border-pink-200",
-      MISCELLANEOUS: "bg-gray-50 text-gray-700 border-gray-200",
+      TRAVEL: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
+      FOOD: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30",
+      ACCOMMODATION: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30",
+      OFFICE_SUPPLIES: "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/30",
+      MISCELLANEOUS: "bg-slate-500/10 text-[var(--text-secondary)] border-[var(--border-color)]",
     };
-    return badges[category] || "bg-gray-50 text-gray-700 border-gray-200";
+    return badges[category] || "bg-slate-500/10 text-[var(--text-secondary)] border-[var(--border-color)]";
   };
 
   const backendBaseUrl = import.meta.env.VITE_API_BASE_URL.replace("/api/v1", "");
@@ -85,15 +85,15 @@ function ExpenseApprovalsPage() {
     {
       key: "expense_date",
       title: "Date",
-      render: (row) => (row.expense_date ? new Date(row.expense_date).toLocaleDateString() : "—"),
+      render: (row) => (row.expense_date ? new Date(row.expense_date).toLocaleDateString("en-IN") : "—"),
     },
     {
       key: "employee_name",
       title: "Submitter",
       render: (row) => (
         <div>
-          <p className="font-semibold text-gray-800">{row.employee_name || "Unknown User"}</p>
-          <p className="text-2xs text-gray-400 font-medium">{row.employee_email || ""}</p>
+          <p className="font-semibold text-[var(--text-primary)]">{row.employee_name || "Unknown User"}</p>
+          <p className="text-2xs text-[var(--text-secondary)]/80 font-medium">{row.employee_email || ""}</p>
         </div>
       ),
     },
@@ -122,10 +122,10 @@ function ExpenseApprovalsPage() {
       render: (row) => (
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase border ${
           row.status === "APPROVED"
-            ? "bg-emerald-100 text-emerald-850 border-emerald-250"
+            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
             : row.status === "REJECTED"
-            ? "bg-red-100 text-red-850 border-red-255"
-            : "bg-amber-100 text-amber-850 border-amber-255 animate-pulse"
+            ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
+            : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 animate-pulse"
         }`}>
           {row.status}
         </span>
@@ -135,14 +135,14 @@ function ExpenseApprovalsPage() {
       key: "receipt",
       title: "Receipt",
       render: (row) => {
-        if (!row.attachment_name) return <span className="text-xs text-gray-400 italic">No receipt</span>;
+        if (!row.attachment_name) return <span className="text-xs text-[var(--text-secondary)] italic">No receipt</span>;
         const fileUrl = `${backendBaseUrl}/uploads/expenses/${row.attachment_name}`;
         return (
           <a
             href={fileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 text-gray-600 rounded-lg text-xs font-bold border border-gray-150 transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--bg-primary)]/40 hover:bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg text-xs font-bold border border-[var(--border-color)] transition-colors cursor-pointer"
           >
             <FaFileDownload /> View File
           </a>
@@ -160,7 +160,7 @@ function ExpenseApprovalsPage() {
                 setReviewItem({ ...row, readonly: true });
                 setRejectionReason(row.rejection_reason || "");
               }}
-              className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors border border-gray-200"
+              className="px-2.5 py-1 bg-[var(--bg-primary)]/40 hover:bg-[var(--bg-primary)]/80 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg text-xs font-bold flex items-center gap-1 transition-all border border-[var(--border-color)] cursor-pointer"
             >
               <FaEye /> View Log
             </button>
@@ -172,7 +172,7 @@ function ExpenseApprovalsPage() {
               setReviewItem(row);
               setRejectionReason("");
             }}
-            className="px-2.5 py-1 bg-blue-600 hover:bg-blue-750 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-all shadow-sm"
+            className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-all shadow-sm cursor-pointer"
           >
             <FaReceipt /> Review
           </button>
@@ -186,8 +186,8 @@ function ExpenseApprovalsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Expense Approvals</h1>
-        <p className="text-gray-500">Audit, approve, or reject employee reimbursement claims inside your projects</p>
+        <h1 className="text-3xl font-bold text-[var(--text-primary)]">Expense Approvals</h1>
+        <p className="text-[var(--text-secondary)]">Audit, approve, or reject employee reimbursement claims inside your projects</p>
       </div>
 
       {managerProjectIds.length === 0 ? (
@@ -210,60 +210,60 @@ function ExpenseApprovalsPage() {
       )}
 
       {reviewItem && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200">
-            <h2 className="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4">
+          <div className="glass-panel bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200 text-[var(--text-primary)]">
+            <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)] flex items-center gap-2">
               <FaReceipt className="text-blue-500" />
               {reviewItem.readonly ? "Expense Log History" : "Review Reimbursement Request"}
             </h2>
 
-            <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-2 border border-gray-150">
+            <div className="bg-[var(--bg-primary)]/40 rounded-xl p-4 mb-4 space-y-2 border border-[var(--border-color)]">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Claimant:</span>
-                <span className="font-bold text-gray-800">{reviewItem.employee_name}</span>
+                <span className="text-[var(--text-secondary)] font-medium">Claimant:</span>
+                <span className="font-bold text-[var(--text-primary)]">{reviewItem.employee_name}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Category:</span>
-                <span className="font-bold text-gray-800 uppercase text-xs">{reviewItem.category}</span>
+                <span className="text-[var(--text-secondary)] font-medium">Category:</span>
+                <span className="font-bold text-[var(--text-primary)] uppercase text-xs">{reviewItem.category}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Amount:</span>
-                <span className="font-extrabold text-blue-600">₹{parseFloat(reviewItem.amount).toFixed(2)}</span>
+                <span className="text-[var(--text-secondary)] font-medium">Amount:</span>
+                <span className="font-extrabold text-blue-500">₹{parseFloat(reviewItem.amount).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Project:</span>
-                <span className="font-bold text-gray-800">{reviewItem.project_name}</span>
+                <span className="text-[var(--text-secondary)] font-medium">Project:</span>
+                <span className="font-bold text-[var(--text-primary)]">{reviewItem.project_name}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Date:</span>
-                <span className="font-bold text-gray-800">{new Date(reviewItem.expense_date).toLocaleDateString()}</span>
+                <span className="text-[var(--text-secondary)] font-medium">Date:</span>
+                <span className="font-bold text-[var(--text-primary)]">{new Date(reviewItem.expense_date).toLocaleDateString("en-IN")}</span>
               </div>
               {reviewItem.description && (
-                <div className="pt-2 border-t border-gray-200">
-                  <span className="text-xs text-gray-400 block mb-1">Description:</span>
-                  <p className="text-sm text-gray-600 bg-white p-2 rounded border border-gray-100 italic">{reviewItem.description}</p>
+                <div className="pt-2 border-t border-[var(--border-color)]/60">
+                  <span className="text-xs text-[var(--text-secondary)] block mb-1">Description:</span>
+                  <p className="text-sm text-[var(--text-primary)] bg-[var(--bg-primary)]/60 p-2 rounded border border-[var(--border-color)]/60 italic">{reviewItem.description}</p>
                 </div>
               )}
             </div>
 
             {reviewItem.readonly ? (
               <div className="space-y-4">
-                <div className="p-3.5 rounded-xl border flex flex-col gap-1 bg-gray-50">
-                  <span className="text-xs font-semibold text-gray-400">Review Outcome</span>
-                  <span className={`text-sm font-extrabold uppercase ${reviewItem.status === "APPROVED" ? "text-emerald-600" : "text-red-600"}`}>
+                <div className="p-3.5 rounded-xl border flex flex-col gap-1 bg-[var(--bg-primary)]/40 border-[var(--border-color)]">
+                  <span className="text-xs font-semibold text-[var(--text-secondary)]">Review Outcome</span>
+                  <span className={`text-sm font-extrabold uppercase ${reviewItem.status === "APPROVED" ? "text-emerald-500" : "text-rose-500"}`}>
                     {reviewItem.status}
                   </span>
                   {reviewItem.rejection_reason && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
-                      <span className="text-xs font-semibold text-gray-400 block mb-1">Rejection Reason:</span>
-                      <p className="text-sm text-gray-605 bg-white p-2.5 rounded border border-gray-100 italic">{reviewItem.rejection_reason}</p>
+                    <div className="mt-2 pt-2 border-t border-[var(--border-color)]/60">
+                      <span className="text-xs font-semibold text-[var(--text-secondary)] block mb-1">Rejection Reason:</span>
+                      <p className="text-sm text-[var(--text-primary)] bg-[var(--bg-primary)]/60 p-2.5 rounded border border-[var(--border-color)]/60 italic">{reviewItem.rejection_reason}</p>
                     </div>
                   )}
                 </div>
                 <div className="flex justify-end pt-3">
                   <button
                     onClick={() => setReviewItem(null)}
-                    className="px-6 py-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-bold transition-all text-sm shadow-md"
+                    className="px-6 py-2 bg-[var(--bg-primary)] hover:bg-[var(--bg-primary)]/80 text-[var(--text-primary)] rounded-xl font-bold transition-all text-sm border border-[var(--border-color)] cursor-pointer"
                   >
                     Close
                   </button>
@@ -272,20 +272,20 @@ function ExpenseApprovalsPage() {
             ) : (
               <div className="space-y-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-bold text-gray-700">Rejection Reason</label>
+                  <label className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Rejection Reason</label>
                   <textarea
                     rows={2.5}
                     placeholder="Enter reason if rejecting expense request..."
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
-                    className="w-full rounded-xl border border-gray-300 px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)]/45 text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/50 text-sm transition-all duration-300"
                   />
                 </div>
 
-                <div className="flex justify-between items-center pt-3 border-t border-gray-150 gap-3">
+                <div className="flex justify-between items-center pt-3 border-t border-[var(--border-color)]/60 gap-3">
                   <button
                     onClick={() => setReviewItem(null)}
-                    className="px-4 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 text-gray-600 font-semibold text-sm transition-colors"
+                    className="px-4 py-2.5 border border-[var(--border-color)] bg-[var(--bg-primary)]/40 hover:bg-[var(--bg-primary)]/80 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-xl font-semibold text-sm transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -294,14 +294,14 @@ function ExpenseApprovalsPage() {
                     <button
                       onClick={() => handleReviewSubmit("REJECTED")}
                       disabled={isSubmitting}
-                      className="px-4 py-2.5 bg-red-650 hover:bg-red-700 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-red-500/10 flex items-center gap-1 disabled:opacity-50"
+                      className="px-4 py-2.5 bg-gradient-to-r from-rose-600 to-red-650 hover:from-rose-500 hover:to-red-600 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-red-500/10 flex items-center gap-1 disabled:opacity-50 cursor-pointer"
                     >
                       <FaTimes /> Reject
                     </button>
                     <button
                       onClick={() => handleReviewSubmit("APPROVED")}
                       disabled={isSubmitting}
-                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-emerald-500/10 flex items-center gap-1 disabled:opacity-50"
+                      className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-650 hover:from-emerald-500 hover:to-teal-600 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-emerald-500/10 flex items-center gap-1 disabled:opacity-50 cursor-pointer"
                     >
                       <FaCheck /> Approve
                     </button>

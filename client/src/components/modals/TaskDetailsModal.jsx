@@ -67,10 +67,10 @@ function TaskDetailsModal({ task, onClose }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
         transition={{ type: "spring", stiffness: 200, damping: 20 }}
-        className="glass-panel bg-[var(--bg-secondary)] border border-white/10 w-full max-w-2xl rounded-2xl flex flex-col max-h-[85vh] overflow-hidden shadow-2xl"
+        className="glass-panel bg-[var(--bg-secondary)] border border-[var(--border-color)] w-full max-w-2xl rounded-2xl flex flex-col max-h-[85vh] overflow-hidden shadow-2xl"
       >
         {/* Modal Header */}
-        <div className="flex justify-between items-start p-6 border-b border-white/5">
+        <div className="flex justify-between items-start p-6 border-b border-[var(--border-color)]/60">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2.5">
               <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${getPriorityColor(task.priority)}`}>
@@ -84,7 +84,7 @@ function TaskDetailsModal({ task, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-[var(--text-primary)] transition-all cursor-pointer"
+            className="p-1.5 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] transition-all cursor-pointer"
           >
             <FaTimes />
           </button>
@@ -95,14 +95,14 @@ function TaskDetailsModal({ task, onClose }) {
           {/* Description Block */}
           <div className="space-y-1.5">
             <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Assignment Scope</h4>
-            <p className="text-sm text-[var(--text-primary)] bg-white/5 p-4 rounded-xl border border-white/5 leading-relaxed">
+            <p className="text-sm text-[var(--text-primary)] bg-[var(--bg-tertiary)] p-4 rounded-xl border border-[var(--border-color)] leading-relaxed">
               {task.description || "No specific details were logged for this assignment."}
             </p>
           </div>
 
           {/* Workflow Metas */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-3.5 bg-white/5 border border-white/5 rounded-xl flex items-center gap-3">
+            <div className="p-3.5 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl flex items-center gap-3">
               <FaCalendarAlt className="text-indigo-400 text-lg" />
               <div>
                 <p className="text-[10px] text-[var(--text-secondary)] font-bold uppercase">Deadline</p>
@@ -111,7 +111,7 @@ function TaskDetailsModal({ task, onClose }) {
                 </p>
               </div>
             </div>
-            <div className="p-3.5 bg-white/5 border border-white/5 rounded-xl flex items-center gap-3">
+            <div className="p-3.5 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl flex items-center gap-3">
               <FaStar className="text-emerald-400 text-lg animate-pulse" />
               <div>
                 <p className="text-[10px] text-[var(--text-secondary)] font-bold uppercase">Milestone Status</p>
@@ -120,16 +120,16 @@ function TaskDetailsModal({ task, onClose }) {
                 </p>
               </div>
             </div>
-            <div className="p-3.5 bg-white/5 border border-white/5 rounded-xl flex items-center gap-3">
+            <div className="p-3.5 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl flex items-center gap-3">
               <div className="w-full">
                 <p className="text-[10px] text-[var(--text-secondary)] font-bold uppercase mb-1 flex justify-between">
                   <span>Progress</span>
                   <span className="text-blue-400 font-bold">{task.completion_percentage}%</span>
                 </p>
-                <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                <div className="h-1.5 rounded-full bg-[var(--border-color)] overflow-hidden">
                   <div 
-                    className="h-full rounded-full bg-blue-500 transition-all duration-300"
-                    style={{ width: `${task.completion_percentage}%` }}
+                     className="h-full rounded-full bg-blue-500 transition-all duration-300"
+                     style={{ width: `${task.completion_percentage}%` }}
                   />
                 </div>
               </div>
@@ -137,7 +137,7 @@ function TaskDetailsModal({ task, onClose }) {
           </div>
 
           {/* Discussion comments area */}
-          <div className="border-t border-white/5 pt-6 space-y-4">
+          <div className="border-t border-[var(--border-color)]/60 pt-6 space-y-4">
             <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
               <FaComment className="text-indigo-400" />
               Collaborative Timeline ({comments.length})
@@ -146,12 +146,12 @@ function TaskDetailsModal({ task, onClose }) {
             {/* Comments Feed Bubble Thread */}
             <div className="space-y-4 max-h-64 overflow-y-auto pr-1.5 custom-scrollbar">
               {isLoading ? (
-                <div className="flex justify-center items-center py-6 text-slate-500 text-xs">
+                <div className="flex justify-center items-center py-6 text-[var(--text-secondary)] text-xs">
                   <div className="w-4 h-4 rounded-full border border-indigo-500/20 border-t-indigo-400 animate-spin mr-2" />
                   Retrieving log feeds...
                 </div>
               ) : comments.length === 0 ? (
-                <div className="p-8 text-center text-slate-500 text-xs border border-dashed border-white/5 rounded-xl">
+                <div className="p-8 text-center text-[var(--text-secondary)] text-xs border border-dashed border-[var(--border-color)] rounded-xl">
                   No comments or logs have been recorded on this task yet. Type a note below to start the thread.
                 </div>
               ) : (
@@ -167,8 +167,8 @@ function TaskDetailsModal({ task, onClose }) {
                       {/* Avatar node */}
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center border text-xs font-bold ${
                         isCurrentUser 
-                          ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/30" 
-                          : "bg-white/5 text-[var(--text-secondary)] border-white/5"
+                          ? "bg-indigo-500/20 text-indigo-500 dark:text-indigo-400 border-indigo-500/30" 
+                          : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border-[var(--border-color)]"
                       }`}>
                         <FaUser className="text-[10px]" />
                       </div>
@@ -177,15 +177,15 @@ function TaskDetailsModal({ task, onClose }) {
                       <div className="space-y-1">
                         <div className={`p-3 rounded-2xl text-xs border ${
                           isCurrentUser 
-                            ? "bg-indigo-600/10 border-indigo-500/30 text-indigo-200 rounded-tr-none" 
-                            : "bg-white/5 border-white/5 text-[var(--text-primary)] rounded-tl-none"
+                            ? "bg-indigo-600/10 border-indigo-500/30 text-indigo-950 dark:text-indigo-200 rounded-tr-none" 
+                            : "bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-tl-none"
                         }`}>
                           <p className="font-semibold text-[10px] text-[var(--text-secondary)] mb-1">
                             {c.full_name || "Team Member"}
                           </p>
                           <p className="leading-relaxed whitespace-pre-wrap">{c.comment}</p>
                         </div>
-                        <p className={`text-[9px] text-slate-500 flex items-center gap-1 ${isCurrentUser ? "justify-end" : ""}`}>
+                        <p className={`text-[9px] text-[var(--text-secondary)]/80 flex items-center gap-1 ${isCurrentUser ? "justify-end" : ""}`}>
                           <FaClock className="text-[8px]" />
                           {formatCommentTime(c.created_at)}
                         </p>
@@ -204,7 +204,7 @@ function TaskDetailsModal({ task, onClose }) {
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 disabled={commentMutation.isPending}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[var(--text-primary)] placeholder-slate-400 text-xs focus:outline-none focus:border-indigo-500/50 transition-all duration-300"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 text-xs focus:outline-none focus:border-indigo-500/50 transition-all duration-300 focus:bg-[var(--bg-secondary)]"
               />
               <button
                 type="submit"
@@ -219,10 +219,10 @@ function TaskDetailsModal({ task, onClose }) {
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-white/5 bg-white/[0.01] flex justify-end">
+        <div className="p-4 border-t border-[var(--border-color)]/60 bg-[var(--bg-tertiary)] flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 border border-white/10 hover:bg-white/5 text-[var(--text-primary)] rounded-xl text-xs font-semibold transition-all cursor-pointer"
+            className="px-4 py-2 border border-[var(--border-color)] bg-[var(--bg-tertiary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] rounded-xl text-xs font-semibold transition-all cursor-pointer"
           >
             Dismiss Details
           </button>

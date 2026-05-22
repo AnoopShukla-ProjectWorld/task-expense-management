@@ -77,7 +77,7 @@ function ExpenseModal({ isOpen, onClose, onSubmit, loading, initialData }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-slate-955/65 backdrop-blur-md cursor-pointer"
+          className="fixed inset-0 bg-slate-950/65 backdrop-blur-md cursor-pointer"
         />
 
         <motion.div
@@ -93,14 +93,14 @@ function ExpenseModal({ isOpen, onClose, onSubmit, loading, initialData }) {
           {/* Header */}
           <div className="flex justify-between items-center mb-6 relative">
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+              <h2 className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)]">
                 {initialData ? "Modify Expense Entry" : "File Expense Claim"}
               </h2>
-              <p className="text-xs text-slate-400 mt-1 font-sans">Report receipts, amounts, categories, and client billing</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-1 font-sans">Report receipts, amounts, categories, and client billing</p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              className="p-2 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all cursor-pointer"
             >
               <FaTimes className="text-sm" />
             </button>
@@ -109,9 +109,9 @@ function ExpenseModal({ isOpen, onClose, onSubmit, loading, initialData }) {
           <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto pr-1 scrollbar-thin relative">
             
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Amount (₹) *</label>
+              <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Amount (₹) *</label>
               <div className="relative group">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-emerald-400 transition-colors font-bold text-sm">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] group-focus-within:text-emerald-400 transition-colors font-bold text-sm">
                   ₹
                 </span>
                 <input
@@ -123,12 +123,7 @@ function ExpenseModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                     required: "Expense amount is required",
                     min: { value: 1, message: "Amount must be at least ₹1" }
                   })}
-                  onKeyPress={(e) => {
-                    if (/[^0-9.]/.test(e.key)) {
-                      e.preventDefault();
-                    }
-                  }}
-                  className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/5 rounded-2xl text-sm text-white placeholder-slate-500 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 focus:bg-white/[0.07] transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 focus:bg-[var(--bg-secondary)] transition-all"
                 />
               </div>
               {errors.amount && (
@@ -138,36 +133,36 @@ function ExpenseModal({ isOpen, onClose, onSubmit, loading, initialData }) {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Category *</label>
+                <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Category *</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] pointer-events-none">
                     <FaTags className="text-sm" />
                   </span>
                   <select
                     required
                     {...register("category", { required: "Category is required" })}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-white/5 rounded-2xl text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 cursor-pointer transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 cursor-pointer transition-all focus:bg-[var(--bg-secondary)]"
                   >
-                    <option value="TRAVEL" className="bg-slate-950 text-slate-200">Travel</option>
-                    <option value="FOOD" className="bg-slate-950 text-slate-200">Food</option>
-                    <option value="ACCOMMODATION" className="bg-slate-950 text-slate-200">Accommodation</option>
-                    <option value="OFFICE_SUPPLIES" className="bg-slate-950 text-slate-200">Office Supplies</option>
-                    <option value="MISCELLANEOUS" className="bg-slate-950 text-slate-200">Miscellaneous</option>
+                    <option value="TRAVEL" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Travel</option>
+                    <option value="FOOD" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Food</option>
+                    <option value="ACCOMMODATION" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Accommodation</option>
+                    <option value="OFFICE_SUPPLIES" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Office Supplies</option>
+                    <option value="MISCELLANEOUS" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Miscellaneous</option>
                   </select>
                 </div>
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Expense Date *</label>
+                <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Expense Date *</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] pointer-events-none">
                     <FaCalendarAlt className="text-sm" />
                   </span>
                   <input
                     type="date"
                     required
                     {...register("expense_date", { required: "Date is required" })}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-white/5 rounded-2xl text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 transition-all focus:bg-[var(--bg-secondary)]"
                   />
                 </div>
                 {errors.expense_date && (
@@ -177,33 +172,33 @@ function ExpenseModal({ isOpen, onClose, onSubmit, loading, initialData }) {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Reason / Description</label>
+              <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Reason / Description</label>
               <div className="relative group">
-                <span className="absolute top-3 left-4 text-slate-400 group-focus-within:text-emerald-400 transition-colors">
+                <span className="absolute top-3 left-4 text-[var(--text-secondary)] group-focus-within:text-emerald-400 transition-colors">
                   <FaInfoCircle className="text-sm" />
                 </span>
                 <textarea
                   rows={2}
                   placeholder="Outline client details, business targets, or purchase contexts..."
                   {...register("description")}
-                  className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/5 rounded-2xl text-sm text-white placeholder-slate-500 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 focus:bg-white/[0.07] transition-all resize-none"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 focus:bg-[var(--bg-secondary)] transition-all resize-none"
                 />
               </div>
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Link Project (Optional)</label>
+              <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Link Project (Optional)</label>
               <div className="relative group">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] pointer-events-none">
                   <FaProjectDiagram className="text-sm" />
                 </span>
                 <select
                   {...register("project_id")}
-                  className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-white/5 rounded-2xl text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 cursor-pointer transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 cursor-pointer transition-all focus:bg-[var(--bg-secondary)]"
                 >
-                  <option value="" className="bg-slate-950 text-slate-400">General Expense (No Project)</option>
+                  <option value="" className="bg-[var(--bg-secondary)] text-[var(--text-secondary)]">General Expense (No Project)</option>
                   {projects?.map((p) => (
-                    <option key={p.id} value={p.id} className="bg-slate-950 text-slate-200">
+                    <option key={p.id} value={p.id} className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">
                       {p.project_name}
                     </option>
                   ))}
@@ -212,16 +207,16 @@ function ExpenseModal({ isOpen, onClose, onSubmit, loading, initialData }) {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold tracking-wider text-slate-400 uppercase mb-1">Receipt Attachment</label>
+              <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase mb-1">Receipt Attachment</label>
               <FileUpload onDrop={handleFileDrop} selectedFile={receiptFile} />
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+            <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-color)]">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 font-semibold rounded-2xl text-xs transition-colors cursor-pointer"
+                className="px-5 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] font-semibold rounded-2xl text-xs transition-colors cursor-pointer"
               >
                 Cancel
               </button>

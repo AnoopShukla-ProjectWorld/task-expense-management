@@ -30,10 +30,26 @@ const {
 
 const createUser = asyncHandler(
   async (req, res) => {
+    const {
+      full_name,
+      email,
+      employee_id,
+      password,
+      role_id,
+      department_id,
+      phone_number
+    } = req.body;
+
     const user =
-      await createUserService(
-        req.body
-      );
+      await createUserService({
+        full_name,
+        email,
+        employee_id,
+        password,
+        role_id: role_id ? parseInt(role_id) : undefined,
+        department_id: department_id ? parseInt(department_id) : undefined,
+        phone_number
+      });
 
     // AUDIT LOG
     await logActivity({
@@ -117,10 +133,24 @@ const getUserById =
 const updateUser =
   asyncHandler(
     async (req, res) => {
+      const {
+        full_name,
+        phone_number,
+        status,
+        role_id,
+        department_id
+      } = req.body;
+
       const user =
         await updateUserService(
           req.params.id,
-          req.body
+          {
+            full_name,
+            phone_number,
+            status,
+            role_id: role_id ? parseInt(role_id) : undefined,
+            department_id: department_id ? parseInt(department_id) : undefined
+          }
         );
 
       // AUDIT LOG
@@ -236,10 +266,12 @@ const getProfile =
 const updateProfile =
   asyncHandler(
     async (req, res) => {
+      const { full_name, phone_number } = req.body;
       const user =
         await updateProfileService(
           req.user.id,
-          req.body
+          { full_name, phone_number },
+          req.ip
         );
 
       // AUDIT LOG

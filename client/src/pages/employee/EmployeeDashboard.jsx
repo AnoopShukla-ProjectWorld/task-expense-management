@@ -105,7 +105,7 @@ function EmployeeDashboard() {
       {/* Header Greeting */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+          <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)]">
             Welcome back, {user?.fullName.split(" ")[0]}
           </h1>
           <p className="text-slate-400 text-sm mt-1">
@@ -156,7 +156,7 @@ function EmployeeDashboard() {
         <motion.div variants={itemVariants} className="glass-panel p-6 rounded-2xl lg:col-span-2">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-lg font-bold text-white tracking-wide">My Recent Claims Trend</h3>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">My Recent Claims Trend</h3>
               <p className="text-xs text-slate-400">Visualization of your recent submitted expense claims</p>
             </div>
             <Link to="/employee/expenses" className="text-xs text-blue-400 font-bold hover:underline">
@@ -197,7 +197,7 @@ function EmployeeDashboard() {
         {/* Task Pie Allocation Card */}
         <motion.div variants={itemVariants} className="glass-panel p-6 rounded-2xl flex flex-col justify-between">
           <div>
-            <h3 className="text-lg font-bold text-white tracking-wide mb-1">Workflow Status</h3>
+            <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide mb-1">Workflow Status</h3>
             <p className="text-xs text-slate-400 mb-6">Distribution ratios of your assigned tasks</p>
           </div>
           <div className="h-[180px] relative flex items-center justify-center">
@@ -232,7 +232,7 @@ function EmployeeDashboard() {
                 </ResponsiveContainer>
                 <div className="absolute flex flex-col items-center justify-center">
                   <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Completed</span>
-                  <span className="text-2xl font-black text-white text-glow">{completedTasks}</span>
+                  <span className="text-2xl font-black text-[var(--text-primary)] text-glow">{completedTasks}</span>
                 </div>
               </>
             )}
@@ -242,7 +242,7 @@ function EmployeeDashboard() {
               <div key={idx} className="flex flex-col items-center p-1 bg-white/5 border border-white/5 rounded-xl">
                 <span className="w-2.5 h-2.5 rounded-full mb-1" style={{ backgroundColor: item.color }} />
                 <span className="text-slate-300 font-bold truncate max-w-[70px]">{item.name}</span>
-                <span className="text-white font-extrabold">{item.value}</span>
+                <span className="text-[var(--text-primary)] font-extrabold">{item.value}</span>
               </div>
             ))}
           </div>
@@ -256,7 +256,7 @@ function EmployeeDashboard() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <FaTasks className="text-blue-400 text-lg" />
-              <h3 className="text-lg font-bold text-white tracking-wide">My Active Task Queue</h3>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">My Active Task Queue</h3>
             </div>
             <Link to="/employee/tasks" className="text-xs text-blue-400 flex items-center gap-1.5 hover:underline font-semibold">
               <span>View Board</span>
@@ -276,7 +276,7 @@ function EmployeeDashboard() {
                   <div key={task.id} className="p-3.5 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all flex justify-between items-center">
                     <div className="space-y-1 flex-1 min-w-0 pr-4">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-white truncate">{task.title}</h4>
+                        <h4 className="text-sm font-bold text-[var(--text-primary)] truncate">{task.title}</h4>
                         <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
                           task.priority === "HIGH" 
                             ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" 
@@ -314,7 +314,7 @@ function EmployeeDashboard() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <FaMoneyBill className="text-emerald-400 text-lg" />
-              <h3 className="text-lg font-bold text-white tracking-wide">My Expense Claims Tracker</h3>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">My Expense Claims Tracker</h3>
             </div>
             <Link to="/employee/expenses" className="text-xs text-blue-400 flex items-center gap-1.5 hover:underline font-semibold">
               <span>View Claims</span>
@@ -332,7 +332,7 @@ function EmployeeDashboard() {
                 <div key={expense.id} className="p-3.5 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all flex justify-between items-center">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-white">₹{Number(expense.amount).toFixed(2)}</span>
+                      <span className="text-sm font-bold text-[var(--text-primary)]">₹{Number(expense.amount).toFixed(2)}</span>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-600/20 text-blue-400 font-semibold border border-blue-500/20">{expense.category}</span>
                     </div>
                     <p className="text-xs text-slate-400">{expense.description}</p>

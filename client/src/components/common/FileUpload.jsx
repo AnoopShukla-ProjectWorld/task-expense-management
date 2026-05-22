@@ -21,7 +21,7 @@ function FileUpload({ onDrop, selectedFile }) {
           ? "border-emerald-500/50 bg-emerald-500/5 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
           : selectedFile
           ? "border-emerald-500/50 bg-emerald-500/5 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-          : "border-white/10 hover:border-violet-500/30 hover:bg-white/[0.03] bg-white/[0.01]"
+          : "border-[var(--border-color)] hover:border-violet-500/30 hover:bg-[var(--bg-hover)] bg-[var(--bg-tertiary)]"
       }`}
     >
       <input {...getInputProps()} />
@@ -32,21 +32,21 @@ function FileUpload({ onDrop, selectedFile }) {
             <FaFileAlt className="text-2xl animate-pulse" />
           </div>
           <p className="text-xs font-semibold text-emerald-400">Receipt Attached!</p>
-          <p className="text-[11px] text-slate-400 font-medium truncate max-w-xs">{selectedFile.name}</p>
+          <p className="text-[11px] text-[var(--text-secondary)] font-medium truncate max-w-xs">{selectedFile.name}</p>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2">
-          <div className="p-3 rounded-full bg-white/5 text-slate-400 border border-white/5 group-hover:text-white transition-colors">
+          <div className="p-3 rounded-full bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border border-[var(--border-color)] transition-colors">
             <FaCloudUploadAlt className="text-2xl" />
           </div>
           {isDragActive ? (
             <p className="text-xs font-medium text-emerald-400">Release to attach receipt...</p>
           ) : (
             <>
-              <p className="text-xs font-semibold text-slate-200">
+              <p className="text-xs font-semibold text-[var(--text-primary)]">
                 Drag & drop a receipt here, or <span className="text-violet-400 underline hover:text-violet-300">browse</span>
               </p>
-              <p className="text-[10px] text-slate-500 font-medium">
+              <p className="text-[10px] text-[var(--text-secondary)] font-medium">
                 Supports PDF, JPG, PNG (Max 5MB)
               </p>
             </>

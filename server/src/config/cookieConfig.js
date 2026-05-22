@@ -3,7 +3,7 @@ const cookieOptions = {
 
   secure: process.env.NODE_ENV === "production",
 
-  sameSite: "strict",
+  sameSite: "lax",
 };
 
 module.exports = cookieOptions;

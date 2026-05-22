@@ -20,11 +20,12 @@ function TableFilters({
             )
           }
           className="
-            border rounded-xl
-            px-4 py-3 bg-white
+            border border-[var(--border-color)] rounded-xl
+            px-4 py-3 bg-[var(--bg-secondary)] text-[var(--text-primary)]
+            focus:outline-none focus:border-[var(--accent-blue)]/50 transition-all cursor-pointer
           "
         >
-          <option value="">
+          <option value="" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">
             All
           </option>
 
@@ -33,6 +34,7 @@ function TableFilters({
               <option
                 key={option}
                 value={option}
+                className="bg-[var(--bg-secondary)] text-[var(--text-primary)]"
               >
                 {option}
               </option>
