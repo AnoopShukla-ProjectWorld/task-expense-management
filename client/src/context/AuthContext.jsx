@@ -22,6 +22,17 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     fetchUser();
+
+    const handleSessionExpired = () => {
+      setUser(null);
+      setLoading(false);
+      toast.error("Your session has expired. Please log in again.");
+    };
+
+    window.addEventListener("auth-session-expired", handleSessionExpired);
+    return () => {
+      window.removeEventListener("auth-session-expired", handleSessionExpired);
+    };
   }, []);
 
   // LOGIN — loginApi returns { success, message, data: { user } }

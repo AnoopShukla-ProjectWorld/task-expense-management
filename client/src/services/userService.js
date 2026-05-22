@@ -1,7 +1,8 @@
 import axiosInstance from "../api/axios";
 
-export const getUsers = async (search = "") => {
-  const response = await axiosInstance.get(`/users?search=${search}`);
+export const getUsers = async (query = "") => {
+  const params = typeof query === "string" ? { search: query } : query;
+  const response = await axiosInstance.get("/users", { params });
   return response.data.data;
 };
 
@@ -23,4 +24,14 @@ export const updateUser = async (id, data) => {
 export const deleteUser = async (id) => {
   const response = await axiosInstance.delete(`/users/${id}`);
   return response.data;
+};
+
+export const getProfile = async () => {
+  const response = await axiosInstance.get("/users/profile/me");
+  return response.data.data;
+};
+
+export const updateProfile = async (data) => {
+  const response = await axiosInstance.put("/users/profile/me", data);
+  return response.data.data;
 };

@@ -109,6 +109,8 @@ const getProjects = async ({
   limit,
   search,
   status,
+  userId,
+  userRole,
 }) => {
   const offset = (page - 1) * limit;
 
@@ -123,6 +125,16 @@ const getProjects = async ({
 
     WHERE p.is_deleted = 0
   `;
+
+  if (userRole === "MANAGER") {
+    query += `
+      AND p.assigned_manager_id = @userId
+    `;
+  } else if (userRole === "EMPLOYEE") {
+    query += `
+      AND p.id IN (SELECT project_id FROM project_members WHERE user_id = @userId)
+    `;
+  }
 
   if (search) {
     query += `
@@ -156,6 +168,14 @@ const getProjects = async ({
       sql.Int,
       limit
     );
+
+  if (userRole === "MANAGER" || userRole === "EMPLOYEE") {
+    request.input(
+      "userId",
+      sql.Int,
+      userId
+    );
+  }
 
   if (search) {
     request.input(

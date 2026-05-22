@@ -219,37 +219,74 @@ const getExpenses = async ({
   limit,
   status,
   category,
+  userId,
+  userRole,
 }) => {
   const offset =
     (page - 1) * limit;
 
   let query = `
-    SELECT *
-    FROM expenses
-    WHERE is_deleted = 0
+    SELECT 
+      e.*,
+      u.full_name AS employee_name,
+      u.email AS employee_email,
+      p.project_name AS project_name,
+      a.file_name AS attachment_name,
+      a.file_path AS attachment_path
+    FROM expenses e
+    LEFT JOIN users u ON e.user_id = u.id
+    LEFT JOIN projects p ON e.project_id = p.id
+    LEFT JOIN expense_attachments a ON e.id = a.expense_id
+    WHERE e.is_deleted = 0
   `;
+
+  if (userRole === "MANAGER") {
+    query += `
+      AND p.assigned_manager_id = @userId
+    `;
+  } else if (userRole === "EMPLOYEE") {
+    query += `
+      AND e.user_id = @userId
+    `;
+  }
 
   if (status) {
     query += `
-      AND status = '${status}'
+      AND e.status = @status
     `;
   }
 
   if (category) {
     query += `
-      AND category = '${category}'
+      AND e.category = @category
     `;
   }
 
   query += `
-    ORDER BY created_at DESC
-    OFFSET ${offset} ROWS
-    FETCH NEXT ${limit} ROWS ONLY
+    ORDER BY e.created_at DESC
+    OFFSET @offset ROWS
+    FETCH NEXT @limit ROWS ONLY
   `;
 
-  const result = await pool
-    .request()
-    .query(query);
+  const request = pool.request();
+
+  request
+    .input("offset", sql.Int, offset)
+    .input("limit", sql.Int, limit);
+
+  if (userRole === "MANAGER" || userRole === "EMPLOYEE") {
+    request.input("userId", sql.Int, userId);
+  }
+
+  if (status) {
+    request.input("status", sql.NVarChar(20), status);
+  }
+
+  if (category) {
+    request.input("category", sql.NVarChar(50), category);
+  }
+
+  const result = await request.query(query);
 
   return result.recordset;
 };

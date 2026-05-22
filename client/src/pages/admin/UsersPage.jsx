@@ -17,7 +17,7 @@ function UsersPage() {
 
   const { data: users, isLoading } = useQuery({
     queryKey: ["users", search],
-    queryFn: () => getUsers(search),
+    queryFn: () => getUsers({ search }),
   });
 
   const createMutation = useMutation({
@@ -69,26 +69,32 @@ function UsersPage() {
     { key: "full_name", title: "Name" },
     { key: "email", title: "Email" },
     { key: "employee_id", title: "Emp ID" },
-    { key: "role_name", title: "Role" },
-    { key: "status", title: "Status" },
     {
-      key: "actions",
-      title: "Actions",
+      key: "role_name",
+      title: "Role",
       render: (row) => (
-        <div className="flex gap-2">
-          <button
-            onClick={() => { setEditingUser(row); setIsModalOpen(true); }}
-            className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm"
-          >
-            Edit
-          </button>
-          <button
-            onClick={() => setDeleteId(row.id)}
-            className="px-3 py-1 bg-red-500 text-white rounded-lg text-sm"
-          >
-            Delete
-          </button>
-        </div>
+        <span className={`px-2.5 py-1 rounded-xl text-xs font-bold tracking-wide uppercase border ${
+          row.role_name === "ADMIN"
+            ? "bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.05)]"
+            : row.role_name === "MANAGER"
+            ? "bg-violet-500/10 text-violet-400 border-violet-500/20 shadow-[0_0_10px_rgba(139,92,246,0.05)]"
+            : "bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.05)]"
+        }`}>
+          {row.role_name}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      title: "Status",
+      render: (row) => (
+        <span className={`px-2.5 py-1 rounded-xl text-xs font-bold tracking-wide uppercase border ${
+          row.status === "ACTIVE" || !row.status
+            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]"
+            : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+        }`}>
+          {row.status || "ACTIVE"}
+        </span>
       ),
     },
   ];
@@ -97,8 +103,8 @@ function UsersPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Users Management</h1>
-          <p className="text-gray-500">Manage all system users</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Users Management</h1>
+          <p className="text-slate-400 text-sm mt-1">Manage and provision team profiles and permissions</p>
         </div>
         <Button onClick={() => { setEditingUser(null); setIsModalOpen(true); }}>
           Create User
@@ -114,7 +120,9 @@ function UsersPage() {
         columns={columns}
         data={users || []}
         loading={isLoading}
-        actions={false}
+        actions={true}
+        onEdit={(row) => { setEditingUser(row); setIsModalOpen(true); }}
+        onDelete={(id) => setDeleteId(id)}
       />
 
       <UserModal
@@ -128,7 +136,7 @@ function UsersPage() {
       {deleteId && (
         <ConfirmDialog
           title="Delete User"
-          description="Are you sure? This action cannot be undone."
+          description="Are you sure? This action will permanently revoke this user's platform access and credentials."
           onCancel={() => setDeleteId(null)}
           onConfirm={() => deleteMutation.mutate(deleteId)}
         />

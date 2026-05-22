@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 import EmptyState from "../common/EmptyState";
 import TableLoader from "../loaders/TableLoader";
 
@@ -18,8 +19,10 @@ function DataTable({
   const sortedData = useMemo(() => {
     if (!sortKey) return data;
     return [...data].sort((a, b) => {
-      if (sortOrder === "asc") return a[sortKey] > b[sortKey] ? 1 : -1;
-      return a[sortKey] < b[sortKey] ? 1 : -1;
+      const aVal = a[sortKey] ?? "";
+      const bVal = b[sortKey] ?? "";
+      if (sortOrder === "asc") return aVal > bVal ? 1 : -1;
+      return aVal < bVal ? 1 : -1;
     });
   }, [data, sortKey, sortOrder]);
 
@@ -49,10 +52,10 @@ function DataTable({
   };
 
   const getSortIcon = (key) => {
-    if (sortKey !== key) return <FaSort className="text-gray-400" />;
+    if (sortKey !== key) return <FaSort className="text-slate-500 hover:text-slate-300 transition-colors" />;
     return sortOrder === "asc"
-      ? <FaSortUp className="text-blue-500" />
-      : <FaSortDown className="text-blue-500" />;
+      ? <FaSortUp className="text-blue-400" />
+      : <FaSortDown className="text-blue-400" />;
   };
 
   if (loading) return <TableLoader />;
@@ -60,97 +63,111 @@ function DataTable({
   if (!data.length) return <EmptyState title="No records found" />;
 
   return (
-    <div className="overflow-x-auto bg-white rounded-2xl shadow-sm">
-      <table className="w-full">
-        <thead className="bg-gray-50 border-b border-gray-200">
-          <tr>
-            <th className="px-5 py-4 w-10">
-              <input
-                type="checkbox"
-                checked={selectedRows.length === data.length}
-                onChange={handleSelectAll}
-                className="rounded"
-              />
-            </th>
-
-            {columns.map((column) => (
-              <th
-                key={column.key}
-                onClick={() => handleSort(column.key)}
-                className="px-5 py-4 text-left text-sm font-semibold text-gray-600 cursor-pointer select-none"
-              >
-                <div className="flex items-center gap-2">
-                  {column.title}
-                  {getSortIcon(column.key)}
-                </div>
-              </th>
-            ))}
-
-            {actions && (
-              <th className="px-5 py-4 text-left text-sm font-semibold text-gray-600">
-                Actions
-              </th>
-            )}
-          </tr>
-        </thead>
-
-        <tbody>
-          {sortedData.map((row) => (
-            <tr
-              key={row.id}
-              className={`
-                border-t border-gray-100
-                hover:bg-gray-50
-                transition-colors duration-150
-                ${selectedRows.includes(row.id) ? "bg-blue-50" : ""}
-              `}
-            >
-              <td className="px-5 py-4">
+    <div className="overflow-hidden glass-panel rounded-2xl shadow-2xl border border-[var(--border-color)]">
+      <div className="overflow-x-auto w-full">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-white/[0.02] border-b border-[var(--border-color)] text-[var(--text-secondary)] font-bold text-xs uppercase tracking-wider">
+              <th className="px-6 py-4.5 w-12 text-center">
                 <input
                   type="checkbox"
-                  checked={selectedRows.includes(row.id)}
-                  onChange={() => handleSelectRow(row.id)}
-                  className="rounded"
+                  checked={selectedRows.length === data.length && data.length > 0}
+                  onChange={handleSelectAll}
+                  className="w-4 h-4 rounded border-[var(--border-color)] bg-white/5 text-blue-500 focus:ring-blue-500/20 focus:ring-2 cursor-pointer transition-all"
                 />
-              </td>
+              </th>
 
               {columns.map((column) => (
-                <td
+                <th
                   key={column.key}
-                  className="px-5 py-4 text-sm text-gray-700"
+                  onClick={() => handleSort(column.key)}
+                  className="px-6 py-4.5 text-left font-bold select-none cursor-pointer hover:bg-white/[0.02] transition-colors"
                 >
-                  {column.render
-                    ? column.render(row)
-                    : row[column.key] ?? "—"}
-                </td>
+                  <div className="flex items-center gap-2">
+                    <span>{column.title}</span>
+                    {getSortIcon(column.key)}
+                  </div>
+                </th>
               ))}
 
               {actions && (
-                <td className="px-5 py-4">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => onEdit?.(row)}
-                      className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => onDelete?.(row.id)}
-                      className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
+                <th className="px-6 py-4.5 text-left font-bold">
+                  Actions
+                </th>
               )}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody className="divide-y divide-[var(--border-color)]">
+            <AnimatePresence initial={false}>
+              {sortedData.map((row, idx) => (
+                <motion.tr
+                  key={row.id ?? idx}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.15, delay: Math.min(idx * 0.03, 0.3) }}
+                  className={`
+                    group text-sm text-[var(--text-primary)]
+                    hover:bg-white/[0.02]
+                    transition-all duration-200
+                    ${selectedRows.includes(row.id) ? "bg-blue-600/5 text-white" : ""}
+                  `}
+                >
+                  <td className="px-6 py-4 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.includes(row.id)}
+                      onChange={() => handleSelectRow(row.id)}
+                      className="w-4 h-4 rounded border-[var(--border-color)] bg-white/5 text-blue-500 focus:ring-blue-500/20 focus:ring-2 cursor-pointer transition-all"
+                    />
+                  </td>
+
+                  {columns.map((column) => (
+                    <td
+                      key={column.key}
+                      className="px-6 py-4 font-medium text-[var(--text-primary)]"
+                    >
+                      {column.render
+                        ? column.render(row)
+                        : row[column.key] ?? "—"}
+                    </td>
+                  ))}
+
+                  {actions && (
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => onEdit?.(row)}
+                          className="px-3 py-1.5 bg-blue-600/10 border border-blue-500/20 hover:bg-blue-600 text-blue-400 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => onDelete?.(row.id)}
+                          className="px-3 py-1.5 bg-rose-600/10 border border-rose-500/20 hover:bg-rose-600 text-rose-400 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </motion.tr>
+              ))}
+            </AnimatePresence>
+          </tbody>
+        </table>
+      </div>
 
       {selectedRows.length > 0 && (
-        <div className="px-5 py-3 border-t bg-blue-50 text-sm text-blue-700 font-medium">
-          {selectedRows.length} row{selectedRows.length > 1 ? "s" : ""} selected
+        <div className="px-6 py-3.5 border-t border-[var(--border-color)] bg-blue-500/5 text-xs text-blue-450 font-bold tracking-wide flex justify-between items-center animate-fade-in">
+          <span>{selectedRows.length} item{selectedRows.length > 1 ? "s" : ""} selected for bulk actions</span>
+          <button 
+            onClick={() => setSelectedRows([])}
+            className="text-[10px] uppercase font-extrabold tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            Deselect All
+          </button>
         </div>
       )}
     </div>

@@ -7,26 +7,27 @@ import App from "./App.jsx";
 import "./index.css";
 import queryClient from "./app/queryClient";
 
-import { AuthProvider,} from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 createRoot(
   document.getElementById("root")
 ).render(
   <StrictMode>
-    <QueryClientProvider
-      client={queryClient}
-    >
+    <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <App />
+        <ThemeProvider>
+          <AuthProvider>
+            <App />
 
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 3000,
-            }}
-          />
-        </AuthProvider>
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 3000,
+              }}
+            />
+          </AuthProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>

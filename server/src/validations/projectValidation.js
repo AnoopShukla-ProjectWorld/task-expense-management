@@ -34,13 +34,18 @@ const createProjectValidation = [
 
   body("priority")
     .optional()
-    .isIn([
-      "LOW",
-      "MEDIUM",
-      "HIGH",
-      "CRITICAL",
-    ])
+    .isIn(["LOW", "MEDIUM", "HIGH", "CRITICAL"])
     .withMessage("Invalid priority"),
+
+  body("budget")
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage("Budget must be a positive number"),
+
+  body("completion_percentage")
+    .optional()
+    .isInt({ min: 0, max: 100 })
+    .withMessage("Completion percentage must be between 0 and 100"),
 ];
 
 const updateProjectValidation = [

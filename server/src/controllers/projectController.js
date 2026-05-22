@@ -54,6 +54,8 @@ const getProjects = asyncHandler(
           10,
         search: req.query.search,
         status: req.query.status,
+        userId: req.user.id,
+        userRole: req.user.role,
       });
 
     return successResponse(

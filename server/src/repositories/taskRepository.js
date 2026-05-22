@@ -126,6 +126,8 @@ const getTasks = async ({
   search,
   status,
   assigned_to,
+  userId,
+  userRole,
 }) => {
   const offset = (page - 1) * limit;
 
@@ -145,6 +147,16 @@ const getTasks = async ({
     WHERE t.is_deleted = 0
   `;
 
+  if (userRole === "MANAGER") {
+    query += `
+      AND p.assigned_manager_id = @userId
+    `;
+  } else if (userRole === "EMPLOYEE") {
+    query += `
+      AND t.assigned_to = @userId
+    `;
+  }
+
   if (search) {
     query += `
       AND t.title LIKE '%' + @search + '%'
@@ -157,7 +169,7 @@ const getTasks = async ({
     `;
   }
 
-  if (assigned_to) {
+  if (assigned_to && userRole !== "EMPLOYEE") {
     query += `
       AND t.assigned_to = @assigned_to
     `;
@@ -176,6 +188,10 @@ const getTasks = async ({
     .input("offset", sql.Int, offset)
     .input("limit", sql.Int, limit);
 
+  if (userRole === "MANAGER" || userRole === "EMPLOYEE") {
+    request.input("userId", sql.Int, userId);
+  }
+
   if (search) {
     request.input(
       "search",
@@ -192,7 +208,7 @@ const getTasks = async ({
     );
   }
 
-  if (assigned_to) {
+  if (assigned_to && userRole !== "EMPLOYEE") {
     request.input(
       "assigned_to",
       sql.Int,

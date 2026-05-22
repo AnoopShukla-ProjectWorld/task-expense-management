@@ -13,12 +13,23 @@ const getAdminDashboardStats =
       await pool.request().query(`
       SELECT
         (SELECT COUNT(*) FROM users WHERE is_deleted = 0) AS total_users,
-
+        (SELECT COUNT(*) FROM users WHERE status = 'ACTIVE' AND is_deleted = 0) AS active_users,
+        (SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.role_name = 'MANAGER' AND u.is_deleted = 0) AS managers_count,
+        (SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.role_name = 'EMPLOYEE' AND u.is_deleted = 0) AS employees_count,
+        
         (SELECT COUNT(*) FROM projects WHERE is_deleted = 0) AS total_projects,
-
+        (SELECT COUNT(*) FROM projects WHERE status = 'ACTIVE' AND is_deleted = 0) AS active_projects,
+        (SELECT COUNT(*) FROM projects WHERE status = 'ACTIVE' AND end_date < CAST(GETDATE() AS DATE) AND is_deleted = 0) AS overdue_projects,
+        
         (SELECT COUNT(*) FROM tasks WHERE is_deleted = 0) AS total_tasks,
-
-        (SELECT COUNT(*) FROM expenses WHERE status = 'PENDING') AS pending_expenses
+        (SELECT COUNT(*) FROM tasks WHERE status = 'COMPLETED' AND is_deleted = 0) AS completed_tasks,
+        (SELECT COUNT(*) FROM tasks WHERE status = 'PENDING' AND is_deleted = 0) AS pending_tasks,
+        
+        (SELECT COUNT(*) FROM expenses WHERE is_deleted = 0) AS total_expenses,
+        (SELECT COUNT(*) FROM expenses WHERE status = 'PENDING' AND is_deleted = 0) AS pending_expenses,
+        (SELECT COUNT(*) FROM expenses WHERE status = 'REJECTED' AND is_deleted = 0) AS rejected_expenses,
+        
+        (SELECT COUNT(*) FROM sessions WHERE is_active = 1) AS active_sessions
     `);
 
     return result.recordset[0];

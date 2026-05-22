@@ -8,6 +8,8 @@ const cookieParser = require(
   "cookie-parser"
 );
 
+const path = require("path");
+
 const compression = require(
   "compression"
 );
@@ -119,7 +121,20 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: env.CLIENT_URL,
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        env.CLIENT_URL,
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+      ];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -134,6 +149,8 @@ app.use(
 );
 
 app.use(responseTime());
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 
 // ============================================

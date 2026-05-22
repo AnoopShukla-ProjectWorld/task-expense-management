@@ -69,6 +69,8 @@ const getAllExpenses =
 
           category:
             req.query.category,
+          userId: req.user.id,
+          userRole: req.user.role,
         });
 
       return successResponse(

@@ -59,6 +59,8 @@ const getTasks = asyncHandler(
         status: req.query.status,
         assigned_to:
           req.query.assigned_to,
+        userId: req.user.id,
+        userRole: req.user.role,
       });
 
     return successResponse(

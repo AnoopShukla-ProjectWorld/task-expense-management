@@ -19,3 +19,8 @@ export const deleteExpense = async (id) => {
   const response = await axiosInstance.delete(`/expenses/${id}`);
   return response.data;
 };
+
+export const reviewExpense = async (id, data) => {
+  const response = await axiosInstance.patch(`/expenses/${id}/review`, data);
+  return response.data;
+};

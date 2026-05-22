@@ -5,15 +5,27 @@ import { ROLES } from "../constants/roles";
 import LoginPage from "../pages/auth/LoginPage";
 import UnauthorizedPage from "../pages/auth/UnauthorizedPage";
 import DashboardLayout from "../layouts/DashboardLayout";
+
+// Admin Pages
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import UsersPage from "../pages/admin/UsersPage";
-import ProjectsPage from "../pages/admin/ProjectsPage";
-import TasksPage from "../pages/admin/TasksPage";
-import ExpensesPage from "../pages/admin/ExpensesPage";
+import AdminProjectsPage from "../pages/admin/ProjectsPage";
+import AdminTasksPage from "../pages/admin/TasksPage";
+import AdminExpensesPage from "../pages/admin/ExpensesPage";
 import ReportsPage from "../pages/admin/ReportsPage";
 import AuditLogsPage from "../pages/admin/AuditLogsPage";
+
+// Manager Pages
 import ManagerDashboard from "../pages/manager/ManagerDashboard";
+import ManagerProjectsPage from "../pages/manager/ProjectsPage";
+import TeamTaskPage from "../pages/manager/TeamTaskPage";
+import ExpenseApprovalsPage from "../pages/manager/ExpenseApprovalsPage";
+
+// Employee Pages
 import EmployeeDashboard from "../pages/employee/EmployeeDashboard";
+import MyTaskPage from "../pages/employee/MyTaskPage";
+import MyExpensesPage from "../pages/employee/MyExpensesPage";
+import ProfilePage from "../pages/employee/ProfilePage";
 
 const AppRoutes = () => {
   return (
@@ -30,9 +42,9 @@ const AppRoutes = () => {
           <Route path="/admin" element={<DashboardLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<UsersPage />} />
-            <Route path="projects" element={<ProjectsPage />} />
-            <Route path="tasks" element={<TasksPage />} />
-            <Route path="expenses" element={<ExpensesPage />} />
+            <Route path="projects" element={<AdminProjectsPage />} />
+            <Route path="tasks" element={<AdminTasksPage />} />
+            <Route path="expenses" element={<AdminExpensesPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="audit-logs" element={<AuditLogsPage />} />
           </Route>
@@ -42,6 +54,9 @@ const AppRoutes = () => {
         <Route element={<RoleRoute allowedRoles={[ROLES.MANAGER]} />}>
           <Route path="/manager" element={<DashboardLayout />}>
             <Route index element={<ManagerDashboard />} />
+            <Route path="projects" element={<ManagerProjectsPage />} />
+            <Route path="tasks" element={<TeamTaskPage />} />
+            <Route path="expenses" element={<ExpenseApprovalsPage />} />
           </Route>
         </Route>
 
@@ -49,6 +64,9 @@ const AppRoutes = () => {
         <Route element={<RoleRoute allowedRoles={[ROLES.EMPLOYEE]} />}>
           <Route path="/employee" element={<DashboardLayout />}>
             <Route index element={<EmployeeDashboard />} />
+            <Route path="tasks" element={<MyTaskPage />} />
+            <Route path="expenses" element={<MyExpensesPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
         </Route>
 

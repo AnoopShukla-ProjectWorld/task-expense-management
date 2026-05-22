@@ -19,3 +19,13 @@ export const deleteTask = async (id) => {
   const response = await axiosInstance.delete(`/tasks/${id}`);
   return response.data;
 };
+
+export const getTaskComments = async (taskId) => {
+  const response = await axiosInstance.get(`/tasks/${taskId}/comments`);
+  return response.data.data;
+};
+
+export const createTaskComment = async (taskId, commentText) => {
+  const response = await axiosInstance.post(`/tasks/${taskId}/comments`, { comment: commentText });
+  return response.data.data;
+};
