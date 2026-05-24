@@ -228,7 +228,7 @@ const getExpenses = async ({
   let query = `
     SELECT 
       e.*,
-      u.full_name AS employee_name,
+      CONCAT(u.first_name, ' ', u.last_name) AS employee_name,
       u.email AS employee_email,
       p.project_name AS project_name,
       a.file_name AS attachment_name,

@@ -36,11 +36,34 @@ const validatePhoneNumber = body("phone_number")
 // ============================================
 
 const createUserValidation = [
-  body("full_name")
+  body("first_name")
     .trim()
-    .notEmpty()
-    .withMessage("Full name is required")
-    .matches(/^[a-zA-Z\s'-]+$/)
+    .custom((value, { req }) => {
+      if (!value && !req.body.full_name) {
+        throw new Error("First name is required");
+      }
+      if (value && !/^[a-zA-Z\s\'-]+$/.test(value)) {
+        throw new Error("First name can only contain letters, spaces, hyphens, and apostrophes");
+      }
+      return true;
+    }),
+
+  body("last_name")
+    .trim()
+    .custom((value, { req }) => {
+      if (!value && !req.body.full_name) {
+        throw new Error("Last name is required");
+      }
+      if (value && !/^[a-zA-Z\s\'-]+$/.test(value)) {
+        throw new Error("Last name can only contain letters, spaces, hyphens, and apostrophes");
+      }
+      return true;
+    }),
+
+  body("full_name")
+    .optional({ checkFalsy: true })
+    .trim()
+    .matches(/^[a-zA-Z\s\'-]+$/)
     .withMessage("Full name can only contain letters, spaces, hyphens, and apostrophes"),
 
   body("email")
@@ -55,8 +78,11 @@ const createUserValidation = [
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters"),
 
-  body("role_id")
-    .isInt()
+  body("role")
+    .trim()
+    .notEmpty()
+    .withMessage("Role is required")
+    .isIn(["manager", "employee", "admin", "pending"])
     .withMessage("Valid role required"),
 
   body("department_id")
@@ -72,22 +98,36 @@ const createUserValidation = [
 // ============================================
 
 const updateUserValidation = [
-  body("full_name")
+  body("first_name")
     .optional()
     .trim()
-    .matches(/^[a-zA-Z\s'-]+$/)
+    .matches(/^[a-zA-Z\s\'-]+$/)
+    .withMessage("First name can only contain letters, spaces, hyphens, and apostrophes"),
+
+  body("last_name")
+    .optional()
+    .trim()
+    .matches(/^[a-zA-Z\s\'-]+$/)
+    .withMessage("Last name can only contain letters, spaces, hyphens, and apostrophes"),
+
+  body("full_name")
+    .optional({ checkFalsy: true })
+    .trim()
+    .matches(/^[a-zA-Z\s\'-]+$/)
     .withMessage("Full name can only contain letters, spaces, hyphens, and apostrophes"),
 
   validatePhoneNumber,
 
   body("status")
     .optional()
-    .isIn(["ACTIVE", "INACTIVE"])
+    .isIn(["approved", "pending", "rejected", "suspended"])
     .withMessage("Invalid status"),
 
-  body("role_id")
+  body("role")
     .optional()
-    .isInt(),
+    .trim()
+    .isIn(["manager", "employee", "admin", "pending"])
+    .withMessage("Invalid role"),
 
   body("department_id")
     .optional()

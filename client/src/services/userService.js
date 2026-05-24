@@ -35,3 +35,18 @@ export const updateProfile = async (data) => {
   const response = await axiosInstance.put("/users/profile/me", data);
   return response.data.data;
 };
+
+export const approveUser = async ({ id, role }) => {
+  const response = await axiosInstance.put(`/users/${id}/approve`, { role });
+  return response.data;
+};
+
+export const rejectUser = async (id) => {
+  const response = await axiosInstance.put(`/users/${id}/reject`);
+  return response.data;
+};
+
+export const suspendUser = async (id) => {
+  const response = await axiosInstance.put(`/users/${id}/suspend`);
+  return response.data;
+};

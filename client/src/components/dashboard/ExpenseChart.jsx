@@ -18,6 +18,7 @@ function ExpenseChart({
       <ResponsiveContainer
         width="100%"
         height={300}
+        minHeight={300}
       >
         <LineChart data={data}>
           <XAxis 

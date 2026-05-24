@@ -9,49 +9,77 @@ const {
 // CREATE USER
 // ============================================
 
+// ============================================
+// CREATE USER
+// ============================================
+
 const createUser = async ({
-  full_name,
+  first_name,
+  last_name,
   email,
-  employee_id,
-  phone_number,
+  employee_id = null,
+  mobile_number,
+  gender,
+  date_of_birth,
   password_hash,
-  role_id,
-  department_id,
+  role = null,
+  status = "pending",
+  email_verified = 0,
+  department_id = null,
 }) => {
   const result = await pool
     .request()
-    .input("full_name", sql.NVarChar(150), full_name)
+    .input("first_name", sql.NVarChar(100), first_name)
+    .input("last_name", sql.NVarChar(100), last_name)
     .input("email", sql.NVarChar(150), email)
-    .input("employee_id", sql.NVarChar(50), employee_id)
-    .input("phone_number", sql.NVarChar(20), phone_number)
+    .input("employee_id", sql.NVarChar(50), employee_id || null)
+    .input("mobile_number", sql.NVarChar(20), mobile_number)
+    .input("gender", sql.NVarChar(20), gender)
+    .input("date_of_birth", sql.Date, date_of_birth)
     .input("password_hash", sql.NVarChar(255), password_hash)
-    .input("role_id", sql.Int, role_id)
+    .input("role", sql.NVarChar(50), role)
+    .input("status", sql.NVarChar(20), status)
+    .input("email_verified", sql.Bit, email_verified)
     .input("department_id", sql.Int, department_id || null)
     .query(`
       INSERT INTO users
       (
-        full_name,
+        first_name,
+        last_name,
         email,
         employee_id,
-        phone_number,
+        mobile_number,
+        gender,
+        date_of_birth,
         password_hash,
-        role_id,
+        role,
+        status,
+        email_verified,
         department_id
       )
       OUTPUT INSERTED.*
       VALUES
       (
-        @full_name,
+        @first_name,
+        @last_name,
         @email,
         @employee_id,
-        @phone_number,
+        @mobile_number,
+        @gender,
+        @date_of_birth,
         @password_hash,
-        @role_id,
+        @role,
+        @status,
+        @email_verified,
         @department_id
       )
     `);
 
-  return result.recordset[0];
+  const createdUser = result.recordset[0];
+  if (createdUser) {
+    createdUser.full_name = `${createdUser.first_name} ${createdUser.last_name}`.trim();
+  }
+  return createdUser;
 };
 
 
@@ -66,19 +94,22 @@ const findUserByEmail = async (email) => {
     .query(`
       SELECT
         u.id,
-        u.full_name,
+        u.first_name,
+        u.last_name,
+        CONCAT(u.first_name, ' ', u.last_name) AS full_name,
         u.email,
         u.employee_id,
-        u.phone_number,
+        u.mobile_number,
+        u.gender,
+        u.date_of_birth,
         u.password_hash,
         u.status,
+        u.role,
+        u.email_verified,
         u.is_deleted,
-        u.role_id,
         u.department_id,
-        r.role_name,
         d.department_name
       FROM users u
-      INNER JOIN roles r ON u.role_id = r.id
       LEFT JOIN departments d ON u.department_id = d.id
       WHERE u.email = @email
         AND u.is_deleted = 0
@@ -99,18 +130,21 @@ const findUserById = async (userId) => {
     .query(`
       SELECT
         u.id,
-        u.full_name,
+        u.first_name,
+        u.last_name,
+        CONCAT(u.first_name, ' ', u.last_name) AS full_name,
         u.email,
         u.employee_id,
-        u.phone_number,
+        u.mobile_number,
+        u.gender,
+        u.date_of_birth,
         u.status,
+        u.role,
+        u.email_verified,
         u.is_deleted,
-        u.role_id,
         u.department_id,
-        r.role_name,
         d.department_name
       FROM users u
-      INNER JOIN roles r ON u.role_id = r.id
       LEFT JOIN departments d ON u.department_id = d.id
       WHERE u.id = @userId
     `);
@@ -135,16 +169,20 @@ const getUsers = async ({
   let query = `
     SELECT
       u.id,
-      u.full_name,
+      u.first_name,
+      u.last_name,
+      CONCAT(u.first_name, ' ', u.last_name) AS full_name,
       u.email,
       u.employee_id,
-      u.phone_number,
+      u.mobile_number,
+      u.gender,
+      u.date_of_birth,
       u.status,
-      r.role_name,
+      u.role,
+      u.email_verified,
       d.department_name,
       u.created_at
     FROM users u
-    INNER JOIN roles r ON u.role_id = r.id
     LEFT JOIN departments d ON u.department_id = d.id
     WHERE u.is_deleted = 0
   `;
@@ -152,14 +190,14 @@ const getUsers = async ({
   if (search) {
     query += `
       AND (
-        u.full_name LIKE '%' + @search + '%'
+        (u.first_name LIKE '%' + @search + '%' OR u.last_name LIKE '%' + @search + '%')
         OR u.email LIKE '%' + @search + '%'
       )
     `;
   }
 
   if (role) {
-    query += ` AND r.role_name = @role `;
+    query += ` AND u.role = @role `;
   }
 
   if (status) {
@@ -198,8 +236,10 @@ const updateUser = async (userId, data) => {
   request.input("userId", sql.Int, userId);
 
   Object.entries(data).forEach(([key, value]) => {
-    fields.push(`${key} = @${key}`);
-    request.input(key, value);
+    if (value !== undefined) {
+      fields.push(`${key} = @${key}`);
+      request.input(key, value);
+    }
   });
 
   fields.push("updated_at = GETDATE()");
@@ -211,15 +251,19 @@ const updateUser = async (userId, data) => {
 
     SELECT
       u.id,
-      u.full_name,
+      u.first_name,
+      u.last_name,
+      CONCAT(u.first_name, ' ', u.last_name) AS full_name,
       u.email,
       u.employee_id,
-      u.phone_number,
+      u.mobile_number,
+      u.gender,
+      u.date_of_birth,
       u.status,
-      r.role_name,
+      u.role,
+      u.email_verified,
       d.department_name
     FROM users u
-    INNER JOIN roles r ON u.role_id = r.id
     LEFT JOIN departments d ON u.department_id = d.id
     WHERE u.id = @userId
   `;

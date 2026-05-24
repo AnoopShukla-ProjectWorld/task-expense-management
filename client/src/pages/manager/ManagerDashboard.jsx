@@ -170,7 +170,7 @@ function ManagerDashboard() {
                 No active projects or task mappings recorded yet.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={280} minWidth={0}>
                 <BarChart data={projectChartData}>
                   <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
                   <YAxis stroke="#64748b" fontSize={11} tickLine={false} domain={[0, 100]} />
@@ -204,7 +204,7 @@ function ManagerDashboard() {
               <div className="text-slate-500 text-sm">No task status allocation mappings available</div>
             ) : (
               <>
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={220} minWidth={0}>
                   <PieChart>
                     <Pie
                       data={taskChartData}

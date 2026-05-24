@@ -93,11 +93,10 @@ const authMiddleware = asyncHandler(
       // CHECK ACCOUNT STATUS
       // ============================================
 
-      if (
-        user.status !== "ACTIVE"
-      ) {
+      const status = user.status?.toLowerCase();
+      if (status !== "approved" && status !== "active") {
         throw new AppError(
-          "Account inactive",
+          "Account is pending review or suspended",
           FORBIDDEN
         );
       }
@@ -108,16 +107,17 @@ const authMiddleware = asyncHandler(
 
       req.user = {
         id: user.id,
-        fullName:
-          user.full_name,
+        fullName: user.full_name,
         email: user.email,
-        role: user.role_name,
-        department:
-          user.department_name,
+        role: user.role ? user.role.toUpperCase() : null,
+        department: user.department_name,
       };
 
       next();
     } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
       throw new AppError(
         "Invalid or expired token",
         UNAUTHORIZED

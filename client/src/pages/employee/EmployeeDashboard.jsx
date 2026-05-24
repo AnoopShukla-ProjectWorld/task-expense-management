@@ -169,7 +169,7 @@ function EmployeeDashboard() {
                 No expense submissions recorded. Start uploading receipts.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={280}>
                 <AreaChart data={expenseChartData}>
                   <defs>
                     <linearGradient id="colorClaim" x1="0" y1="0" x2="0" y2="1">
@@ -205,7 +205,7 @@ function EmployeeDashboard() {
               <div className="text-slate-500 text-sm text-center">No active tasks in portfolio</div>
             ) : (
               <>
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minHeight={180}>
                   <PieChart>
                     <Pie
                       data={taskChartData}

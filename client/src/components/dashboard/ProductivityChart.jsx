@@ -17,6 +17,7 @@ function ProductivityChart({
       <ResponsiveContainer
         width="100%"
         height={300}
+        minHeight={300}
       >
         <PieChart>
           <Pie

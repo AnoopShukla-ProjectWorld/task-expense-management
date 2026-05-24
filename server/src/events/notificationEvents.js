@@ -70,8 +70,31 @@ const expenseRejectedEvent =
     });
   };
 
+
+// ============================================
+// PROJECT ASSIGNED EVENT
+// ============================================
+
+const projectAssignedEvent =
+  async ({
+    userId,
+    projectName,
+  }) => {
+    await sendNotification({
+      userId,
+
+      title:
+        "New Project Assigned",
+
+      message: `You have been assigned project: ${projectName}`,
+
+      type: "PROJECT",
+    });
+  };
+
 module.exports = {
   taskAssignedEvent,
   expenseApprovedEvent,
   expenseRejectedEvent,
+  projectAssignedEvent,
 };

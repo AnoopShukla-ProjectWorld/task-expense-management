@@ -540,7 +540,7 @@ function ReportsPage() {
                   No expense records found inside the defined range.
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={300} minWidth={0}>
                   <BarChart data={expenseChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="neonEmeraldGrad" x1="0" y1="0" x2="0" y2="1">
@@ -587,7 +587,7 @@ function ReportsPage() {
               ) : (
                 <div className="w-full h-full flex flex-col sm:flex-row items-center gap-6">
                   <div className="w-full sm:w-1/2 h-[220px]">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height={220} minWidth={0}>
                       <PieChart>
                         <Pie
                           data={taskChartData}

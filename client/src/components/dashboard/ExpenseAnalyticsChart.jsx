@@ -18,6 +18,7 @@ function ExpenseAnalyticsChart({
       <ResponsiveContainer
         width="100%"
         height={300}
+        minHeight={300}
       >
         <BarChart data={data}>
           <XAxis 

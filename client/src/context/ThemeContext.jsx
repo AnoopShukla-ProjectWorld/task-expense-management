@@ -9,8 +9,12 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved) return saved === "dark";
+    try {
+      const saved = localStorage.getItem("theme");
+      if (saved) return saved === "dark";
+    } catch (e) {
+      console.warn("localStorage is not available:", e);
+    }
     return true; // Default to dark mode for premium SaaS look
   });
 
@@ -19,11 +23,15 @@ export const ThemeProvider = ({ children }) => {
     if (darkMode) {
       root.classList.add("dark");
       root.setAttribute("data-theme", "dark");
-      localStorage.setItem("theme", "dark");
+      try {
+        localStorage.setItem("theme", "dark");
+      } catch (e) {}
     } else {
       root.classList.remove("dark");
       root.setAttribute("data-theme", "light");
-      localStorage.setItem("theme", "light");
+      try {
+        localStorage.setItem("theme", "light");
+      } catch (e) {}
     }
   }, [darkMode]);
 

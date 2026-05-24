@@ -17,14 +17,14 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
 
   useEffect(() => {
     if (initialData) {
-      const parsed = parsePhone(initialData.phone_number);
+      const parsed = parsePhone(initialData.mobile_number);
       reset({
         full_name: initialData.full_name,
         email: initialData.email,
         employee_id: initialData.employee_id,
         phone_country: parsed.countryCode,
         phone_local: parsed.localNumber,
-        role_id: initialData.role_id,
+        role: initialData.role,
       });
     } else {
       reset({
@@ -34,7 +34,7 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
         phone_country: "+91",
         phone_local: "",
         password: "",
-        role_id: "",
+        role: "",
       });
     }
   }, [initialData, isOpen, reset]);
@@ -47,7 +47,7 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
     const payload = {
       ...rest,
       phone_number: combinedPhone,
-      role_id: parseInt(data.role_id),
+      role: data.role,
       department_id: data.department_id
         ? parseInt(data.department_id)
         : undefined,
@@ -248,16 +248,16 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                   <FaUserTag className="text-sm" />
                 </span>
                 <select
-                  {...register("role_id", { required: "Access role is required" })}
-                  className={`w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border ${errors.role_id ? "border-rose-500/50" : "border-[var(--border-color)]"} rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 cursor-pointer transition-all focus:bg-[var(--bg-secondary)]`}
+                  {...register("role", { required: "Access role is required" })}
+                  className={`w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border ${errors.role ? "border-rose-500/50" : "border-[var(--border-color)]"} rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 cursor-pointer transition-all focus:bg-[var(--bg-secondary)]`}
                 >
                   <option value="" disabled className="bg-[var(--bg-secondary)] text-[var(--text-secondary)]">Select Access Tier</option>
-                  <option value="2" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Manager (Project Lead)</option>
-                  <option value="3" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Employee (Operational Staff)</option>
+                  <option value="manager" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Manager (Project Lead)</option>
+                  <option value="employee" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">Employee (Operational Staff)</option>
                 </select>
               </div>
-              {errors.role_id && (
-                <p className="text-[11px] text-rose-400 font-semibold">{errors.role_id.message}</p>
+              {errors.role && (
+                <p className="text-[11px] text-rose-400 font-semibold">{errors.role.message}</p>
               )}
             </div>
 

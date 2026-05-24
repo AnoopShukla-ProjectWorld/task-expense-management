@@ -134,7 +134,7 @@ const getTasks = async ({
   let query = `
     SELECT
       t.*,
-      u.full_name AS assigned_to_name,
+      CONCAT(u.first_name, ' ', u.last_name) AS assigned_to_name,
       p.project_name
     FROM tasks t
 
@@ -385,7 +385,7 @@ const getTaskComments = async (
     .query(`
       SELECT
         tc.*,
-        u.full_name
+        CONCAT(u.first_name, ' ', u.last_name) AS full_name
       FROM task_comments tc
 
       INNER JOIN users u

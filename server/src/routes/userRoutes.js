@@ -30,6 +30,9 @@ const {
   restoreUser,
   getProfile,
   updateProfile,
+  approveUser,
+  rejectUser,
+  suspendUser,
 } = require(
   "../controllers/userController"
 );
@@ -83,6 +86,28 @@ router.patch(
   authMiddleware,
   roleMiddleware("ADMIN"),
   restoreUser
+);
+
+// Onboarding Approvals / Actions
+router.put(
+  "/:id/approve",
+  authMiddleware,
+  roleMiddleware("ADMIN"),
+  approveUser
+);
+
+router.put(
+  "/:id/reject",
+  authMiddleware,
+  roleMiddleware("ADMIN"),
+  rejectUser
+);
+
+router.put(
+  "/:id/suspend",
+  authMiddleware,
+  roleMiddleware("ADMIN"),
+  suspendUser
 );
 
 

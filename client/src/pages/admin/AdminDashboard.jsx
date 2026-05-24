@@ -148,7 +148,7 @@ function AdminDashboard() {
                 No expense analytics data available currently.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={300} minWidth={0}>
                 <AreaChart data={expenseChartData}>
                   <defs>
                     <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
@@ -184,7 +184,7 @@ function AdminDashboard() {
               <div className="text-[var(--text-secondary)] text-sm font-medium">No status allocations</div>
             ) : (
               <>
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={200} minWidth={0}>
                   <PieChart>
                     <Pie
                       data={projectStatusData}

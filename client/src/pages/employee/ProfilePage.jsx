@@ -32,7 +32,8 @@ function ProfilePage() {
     if (profile) {
       const parsed = parsePhone(profile.phone_number);
       reset({
-        full_name: profile.full_name || "",
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
         phone_country: parsed.countryCode,
         phone_local: parsed.localNumber,
       });
@@ -110,27 +111,48 @@ function ProfilePage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-[var(--text-secondary)]">Full Name *</label>
+                <label className="text-xs font-semibold text-[var(--text-secondary)]">First Name *</label>
                 <div className="relative">
                   <FaUser className="absolute left-4 top-3.5 text-[var(--text-secondary)]" />
                   <input
                     type="text"
-                    {...register("full_name", {
-                      required: "Full name is required",
+                    {...register("first_name", {
+                      required: "First name is required",
                       pattern: {
                         value: /^[a-zA-Z\s'-]+$/,
-                        message: "Name can only contain letters, spaces, hyphens, and apostrophes",
+                        message: "First name can only contain letters, spaces, hyphens, and apostrophes",
                       },
                     })}
                     className="w-full rounded-xl border border-[var(--border-color)] pl-11 pr-4 py-3 outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 text-sm font-semibold bg-[var(--bg-primary)]/40 text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 focus:bg-white/[0.03] transition-all"
                   />
                 </div>
-                {errors.full_name && (
-                  <p className="text-xs text-rose-500 font-semibold mt-1">{errors.full_name.message}</p>
+                {errors.first_name && (
+                  <p className="text-xs text-rose-500 font-semibold mt-1">{errors.first_name.message}</p>
                 )}
               </div>
 
               <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-[var(--text-secondary)]">Last Name *</label>
+                <div className="relative">
+                  <FaUser className="absolute left-4 top-3.5 text-[var(--text-secondary)]" />
+                  <input
+                    type="text"
+                    {...register("last_name", {
+                      required: "Last name is required",
+                      pattern: {
+                        value: /^[a-zA-Z\s'-]+$/,
+                        message: "Last name can only contain letters, spaces, hyphens, and apostrophes",
+                      },
+                    })}
+                    className="w-full rounded-xl border border-[var(--border-color)] pl-11 pr-4 py-3 outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 text-sm font-semibold bg-[var(--bg-primary)]/40 text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 focus:bg-white/[0.03] transition-all"
+                  />
+                </div>
+                {errors.last_name && (
+                  <p className="text-xs text-rose-500 font-semibold mt-1">{errors.last_name.message}</p>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1 md:col-span-2">
                 <label className="text-xs font-semibold text-[var(--text-secondary)]">Phone Number</label>
                 <div className="flex gap-2">
                   <div className="relative w-[90px] shrink-0">

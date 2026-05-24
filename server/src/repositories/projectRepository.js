@@ -117,7 +117,7 @@ const getProjects = async ({
   let query = `
     SELECT
       p.*,
-      u.full_name AS manager_name
+      CONCAT(u.first_name, ' ', u.last_name) AS manager_name
     FROM projects p
 
     INNER JOIN users u

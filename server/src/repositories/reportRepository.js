@@ -13,9 +13,9 @@ const getAdminDashboardStats =
       await pool.request().query(`
       SELECT
         (SELECT COUNT(*) FROM users WHERE is_deleted = 0) AS total_users,
-        (SELECT COUNT(*) FROM users WHERE status = 'ACTIVE' AND is_deleted = 0) AS active_users,
-        (SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.role_name = 'MANAGER' AND u.is_deleted = 0) AS managers_count,
-        (SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.role_name = 'EMPLOYEE' AND u.is_deleted = 0) AS employees_count,
+        (SELECT COUNT(*) FROM users WHERE status = 'approved' AND is_deleted = 0) AS active_users,
+        (SELECT COUNT(*) FROM users WHERE role = 'manager' AND is_deleted = 0) AS managers_count,
+        (SELECT COUNT(*) FROM users WHERE role = 'employee' AND is_deleted = 0) AS employees_count,
         
         (SELECT COUNT(*) FROM projects WHERE is_deleted = 0) AS total_projects,
         (SELECT COUNT(*) FROM projects WHERE status = 'ACTIVE' AND is_deleted = 0) AS active_projects,
@@ -29,7 +29,7 @@ const getAdminDashboardStats =
         (SELECT COUNT(*) FROM expenses WHERE status = 'PENDING' AND is_deleted = 0) AS pending_expenses,
         (SELECT COUNT(*) FROM expenses WHERE status = 'REJECTED' AND is_deleted = 0) AS rejected_expenses,
         
-        (SELECT COUNT(*) FROM sessions WHERE is_active = 1) AS active_sessions
+        (SELECT COUNT(*) FROM user_sessions WHERE is_active = 1) AS active_sessions
     `);
 
     return result.recordset[0];
@@ -148,7 +148,7 @@ const getUserProductivity =
       await pool.request().query(`
       SELECT
         u.id,
-        u.full_name,
+        CONCAT(u.first_name, ' ', u.last_name) AS full_name,
 
         COUNT(t.id) AS total_tasks,
 
@@ -169,7 +169,8 @@ const getUserProductivity =
 
       GROUP BY
         u.id,
-        u.full_name
+        u.first_name,
+        u.last_name
 
       ORDER BY completed_tasks DESC
     `);

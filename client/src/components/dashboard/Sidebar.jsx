@@ -19,6 +19,7 @@ const menuConfigs = {
   ADMIN: [
     { name: "Dashboard", path: "/admin", icon: <FaChartBar /> },
     { name: "Users", path: "/admin/users", icon: <FaUsers /> },
+    { name: "Onboarding", path: "/admin/approvals", icon: <FaUsers /> },
     { name: "Projects", path: "/admin/projects", icon: <FaProjectDiagram /> },
     { name: "Tasks", path: "/admin/tasks", icon: <FaTasks /> },
     { name: "Expenses", path: "/admin/expenses", icon: <FaMoneyBill /> },
@@ -110,11 +111,11 @@ function Sidebar({ onClose }) {
         {/* User profile details snippet */}
         <div className="flex items-center gap-3.5 p-3.5 bg-[var(--bg-tertiary)] rounded-2xl border border-[var(--border-color)] mb-4 shadow-sm">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold uppercase shadow-sm">
-            {user?.fullName ? user.fullName.charAt(0) : "U"}
+            {(user?.full_name || user?.fullName) ? (user.full_name || user.fullName).charAt(0) : "U"}
           </div>
           <div className="flex-1 overflow-hidden">
             <h4 className="text-sm font-semibold truncate text-[var(--text-primary)]">
-              {user?.fullName || "User"}
+              {user?.full_name || user?.fullName || "User"}
             </h4>
             <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
               {role}

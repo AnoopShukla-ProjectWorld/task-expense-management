@@ -13,6 +13,7 @@ const requiredEnvs = [
   "REFRESH_TOKEN_EXPIRES",
 
   "CLIENT_URL",
+  "ADMIN_SECRET_PASSPHRASE",
 ];
 
 

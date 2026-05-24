@@ -69,18 +69,19 @@ function UsersPage() {
     { key: "full_name", title: "Name" },
     { key: "email", title: "Email" },
     { key: "employee_id", title: "Emp ID" },
+    { key: "mobile_number", title: "Mobile" },
     {
-      key: "role_name",
+      key: "role",
       title: "Role",
       render: (row) => (
         <span className={`px-2.5 py-1 rounded-xl text-xs font-bold tracking-wide uppercase border ${
-          row.role_name === "ADMIN"
+          row.role === "admin"
             ? "bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.05)]"
-            : row.role_name === "MANAGER"
+            : row.role === "manager"
             ? "bg-violet-500/10 text-violet-400 border-violet-500/20 shadow-[0_0_10px_rgba(139,92,246,0.05)]"
             : "bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.05)]"
         }`}>
-          {row.role_name}
+          {row.role}
         </span>
       ),
     },
@@ -89,11 +90,13 @@ function UsersPage() {
       title: "Status",
       render: (row) => (
         <span className={`px-2.5 py-1 rounded-xl text-xs font-bold tracking-wide uppercase border ${
-          row.status === "ACTIVE" || !row.status
+          row.status === "approved" || row.status === "ACTIVE" || !row.status
             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]"
+            : row.status === "pending"
+            ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
             : "bg-slate-500/10 text-slate-400 border-slate-500/20"
         }`}>
-          {row.status || "ACTIVE"}
+          {row.status || "approved"}
         </span>
       ),
     },

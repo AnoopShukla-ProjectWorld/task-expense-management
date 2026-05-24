@@ -134,7 +134,7 @@ const getAuditLogs = async ({
       AND (
         al.action LIKE @search
         OR al.entity_name LIKE @search
-        OR u.full_name LIKE @search
+        OR CONCAT(u.first_name, ' ', u.last_name) LIKE @search
       )
     `;
   }
@@ -152,7 +152,7 @@ const getAuditLogs = async ({
         al.ip_address,
         al.created_at,
 
-        u.full_name,
+        CONCAT(u.first_name, ' ', u.last_name) AS full_name,
         u.email
 
       FROM audit_logs al

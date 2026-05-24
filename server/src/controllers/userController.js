@@ -30,25 +30,34 @@ const {
 
 const createUser = asyncHandler(
   async (req, res) => {
-    const {
+    let {
+      first_name,
+      last_name,
       full_name,
       email,
       employee_id,
       password,
-      role_id,
+      role,
       department_id,
       phone_number
     } = req.body;
 
+    if (full_name && (!first_name || !last_name)) {
+      const parts = full_name.trim().split(/\s+/);
+      first_name = parts[0];
+      last_name = parts.slice(1).join(" ") || "";
+    }
+
     const user =
       await createUserService({
-        full_name,
+        first_name,
+        last_name,
         email,
         employee_id,
         password,
-        role_id: role_id ? parseInt(role_id) : undefined,
+        role: role || "employee",
         department_id: department_id ? parseInt(department_id) : undefined,
-        phone_number
+        mobile_number: phone_number
       });
 
     // AUDIT LOG
@@ -133,22 +142,31 @@ const getUserById =
 const updateUser =
   asyncHandler(
     async (req, res) => {
-      const {
+      let {
+        first_name,
+        last_name,
         full_name,
         phone_number,
         status,
-        role_id,
+        role,
         department_id
       } = req.body;
+
+      if (full_name && (!first_name || !last_name)) {
+        const parts = full_name.trim().split(/\s+/);
+        first_name = parts[0];
+        last_name = parts.slice(1).join(" ") || "";
+      }
 
       const user =
         await updateUserService(
           req.params.id,
           {
-            full_name,
-            phone_number,
+            first_name,
+            last_name,
+            mobile_number: phone_number,
             status,
-            role_id: role_id ? parseInt(role_id) : undefined,
+            role,
             department_id: department_id ? parseInt(department_id) : undefined
           }
         );
@@ -266,11 +284,11 @@ const getProfile =
 const updateProfile =
   asyncHandler(
     async (req, res) => {
-      const { full_name, phone_number } = req.body;
+      const { first_name, last_name, phone_number } = req.body;
       const user =
         await updateProfileService(
           req.user.id,
-          { full_name, phone_number },
+          { first_name, last_name, phone_number },
           req.ip
         );
 
@@ -297,6 +315,37 @@ const updateProfile =
 
 
 // ============================================
+// ONBOARDING CONTROLLERS
+// ============================================
+
+const approveUser = asyncHandler(async (req, res) => {
+  const { role } = req.body;
+  if (!role || !["employee", "manager"].includes(role)) {
+    throw new AppError("Invalid or missing role parameter", 400);
+  }
+
+  const { approveUserService } = require("../services/userService");
+  const user = await approveUserService(req.params.id, role, req.user, req.ip);
+
+  return successResponse(res, 200, "User successfully approved and role assigned", user);
+});
+
+const rejectUser = asyncHandler(async (req, res) => {
+  const { rejectUserService } = require("../services/userService");
+  const user = await rejectUserService(req.params.id, req.user, req.ip);
+
+  return successResponse(res, 200, "User registration rejected successfully", user);
+});
+
+const suspendUser = asyncHandler(async (req, res) => {
+  const { suspendUserService } = require("../services/userService");
+  const user = await suspendUserService(req.params.id, req.user, req.ip);
+
+  return successResponse(res, 200, "User account suspended successfully", user);
+});
+
+
+// ============================================
 // EXPORTS
 // ============================================
 
@@ -309,4 +358,7 @@ module.exports = {
   restoreUser,
   getProfile,
   updateProfile,
+  approveUser,
+  rejectUser,
+  suspendUser,
 };

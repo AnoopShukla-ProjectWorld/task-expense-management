@@ -59,17 +59,20 @@ async function seed() {
     // 6. Insert Users (Admin, Managers, Employees)
     console.log("👥 Inserting Users...");
     const usersResult = await pool.request().query(`
-      INSERT INTO users (full_name, email, employee_id, phone_number, password_hash, role_id, department_id, status)
-      OUTPUT inserted.id, inserted.full_name, inserted.email, inserted.role_id
+      INSERT INTO users (first_name, last_name, email, employee_id, phone_number, password_hash, role_id, department_id, status)
+      OUTPUT inserted.id, inserted.first_name, inserted.last_name, inserted.email, inserted.role_id
       VALUES
-      ('Aarav Sharma', 'admin@system.com', 'EMP-001', '9876543210', '${passwordHash}', ${roleMap.ADMIN}, ${deptMap.Engineering}, 'ACTIVE'),
-      ('Vihaan Verma', 'manager1@system.com', 'EMP-002', '9876543211', '${passwordHash}', ${roleMap.MANAGER}, ${deptMap.Engineering}, 'ACTIVE'),
-      ('Ananya Iyer', 'manager2@system.com', 'EMP-003', '9876543212', '${passwordHash}', ${roleMap.MANAGER}, ${deptMap['Product Management']}, 'ACTIVE'),
-      ('Kabir Mehta', 'employee1@system.com', 'EMP-004', '9876543213', '${passwordHash}', ${roleMap.EMPLOYEE}, ${deptMap.Engineering}, 'ACTIVE'),
-      ('Diya Patel', 'employee2@system.com', 'EMP-005', '9876543214', '${passwordHash}', ${roleMap.EMPLOYEE}, ${deptMap.Engineering}, 'ACTIVE'),
-      ('Aditya Rao', 'employee3@system.com', 'EMP-006', '9876543215', '${passwordHash}', ${roleMap.EMPLOYEE}, ${deptMap.Marketing}, 'ACTIVE');
+      ('Aarav', 'Sharma', 'admin@system.com', 'EMP-001', '9876543210', '${passwordHash}', ${roleMap.ADMIN}, ${deptMap.Engineering}, 'ACTIVE'),
+      ('Vihaan', 'Verma', 'manager1@system.com', 'EMP-002', '9876543211', '${passwordHash}', ${roleMap.MANAGER}, ${deptMap.Engineering}, 'ACTIVE'),
+      ('Ananya', 'Iyer', 'manager2@system.com', 'EMP-003', '9876543212', '${passwordHash}', ${roleMap.MANAGER}, ${deptMap['Product Management']}, 'ACTIVE'),
+      ('Kabir', 'Mehta', 'employee1@system.com', 'EMP-004', '9876543213', '${passwordHash}', ${roleMap.EMPLOYEE}, ${deptMap.Engineering}, 'ACTIVE'),
+      ('Diya', 'Patel', 'employee2@system.com', 'EMP-005', '9876543214', '${passwordHash}', ${roleMap.EMPLOYEE}, ${deptMap.Engineering}, 'ACTIVE'),
+      ('Aditya', 'Rao', 'employee3@system.com', 'EMP-006', '9876543215', '${passwordHash}', ${roleMap.EMPLOYEE}, ${deptMap.Marketing}, 'ACTIVE');
     `);
     const users = usersResult.recordset;
+    users.forEach(u => {
+      u.full_name = `${u.first_name} ${u.last_name}`.trim();
+    });
     console.log(`Inserted ${users.length} users`);
 
     const userMap = {};

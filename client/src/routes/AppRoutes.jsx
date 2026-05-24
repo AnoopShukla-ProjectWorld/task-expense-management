@@ -3,6 +3,10 @@ import ProtectedRoute from "./ProtectedRoute";
 import RoleRoute from "./RoleRoute";
 import { ROLES } from "../constants/roles";
 import LoginPage from "../pages/auth/LoginPage";
+import RegisterPage from "../pages/auth/RegisterPage";
+import AdminLoginPage from "../pages/auth/AdminLoginPage";
+import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
 import UnauthorizedPage from "../pages/auth/UnauthorizedPage";
 import DashboardLayout from "../layouts/DashboardLayout";
 
@@ -14,6 +18,7 @@ import AdminTasksPage from "../pages/admin/TasksPage";
 import AdminExpensesPage from "../pages/admin/ExpensesPage";
 import ReportsPage from "../pages/admin/ReportsPage";
 import AuditLogsPage from "../pages/admin/AuditLogsPage";
+import UserApprovalPage from "../pages/admin/UserApprovalPage";
 
 // Manager Pages
 import ManagerDashboard from "../pages/manager/ManagerDashboard";
@@ -32,6 +37,10 @@ const AppRoutes = () => {
     <Routes>
       {/* PUBLIC */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/secure-admin-login" element={<AdminLoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
       {/* PROTECTED */}
@@ -42,6 +51,7 @@ const AppRoutes = () => {
           <Route path="/admin" element={<DashboardLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="approvals" element={<UserApprovalPage />} />
             <Route path="projects" element={<AdminProjectsPage />} />
             <Route path="tasks" element={<AdminTasksPage />} />
             <Route path="expenses" element={<AdminExpensesPage />} />
