@@ -1,64 +1,64 @@
 # Task & Expense Management Hub
 
-A secure corporate workspace portal designed to streamline project tracking, task delegation, and business expense auditing. Built with a robust React/Express architecture, the platform features a dynamic relational database cockpit and **Synapse AI**, a custom retrieval-augmented generation (RAG) assistant that queries live database pools to provide real-time operational insights.
+An internal corporate management portal designed to streamline project tracking, task delegation, and business expense auditing. Built on a React and Node.js/Express architecture, the platform features a relational database integration and **Synapse AI**, a utility that queries live database tables to provide operational context for administrative queries.
 
 ---
 
 ## 🎯 Project Overview & Business Workflow
 
-The platform aligns organizational layers—**Administrators, Project Managers, and Employees**—into a unified workflow:
+The system coordinates workflows across three distinct user roles: **Administrators, Project Managers, and Employees**.
 
 ```
 [Employee] ———> Files Expense claims & Updates assigned Tasks
    |
    v
-[Manager] ———> Allocates Tasks, Approves/Rejects Expenses, & Tracks Project Budgets
+[Manager] ———> Allocates Tasks, Reviews Expenses, & Tracks Project Budgets
    |
    v
 [Admin]   ———> Audits System-Wide Activities, Manages Users, & Queries Synapse AI
 ```
 
-1. **User Provisioning & Onboarding**: Public registration requests enter a secure pending state. Administrators approve or reject accounts via a dedicated control panel.
-2. **Project & Task Lifecycle**: Managers create projects, establish budgets, and delegate tasks. Employees update task completion percentages dynamically.
-3. **Expense Auditing Flow**: Employees submit operational expense claims with standard categories and receipt attachments (PDF/Images). Managers or Administrators review and approve/reject claims, updating project budget utilization in real time.
-4. **Operations Intelligence (Synapse AI)**: Administrators interact with an integrated conversational AI widget that extracts live relational context from the SQL Server database to answer natural language questions about workforce utilization, budget burns, and overdue deadlines.
-5. **System Accountability**: Every security-sensitive activity (logins, user creations, expense reviews, project modifications) is logged to a chronological system audit trail, providing a transparent operational ledger.
+1. **User Onboarding**: Public registration requests enter a pending state. Administrators approve, reject, or suspend accounts through a dedicated management panel.
+2. **Project & Task Allocation**: Managers establish projects, define budgets, and delegate tasks to team members. Employees update task progress percentages and completion states.
+3. **Expense Auditing Flow**: Employees submit operational expense claims classified by category, uploading receipt attachments (images or PDFs). Managers or Administrators review, approve, or reject these claims, dynamically updating the project’s utilized budget.
+4. **Operations Intelligence (Synapse AI)**: Administrators can query an integrated AI assistant. The assistant retrieves real-time relational tables from the database and answers questions about workforce workloads, budget utilization, and upcoming deadlines.
+5. **System Accountability**: Every administrative and state-changing action (logins, user approvals, expense reviews, project edits) is recorded in a chronological audit log.
 
 ---
 
 ## 👥 User Roles & Clearances
 
-* **Administrator**: Full master control over user statuses (Approved, Pending, Suspended), system-wide configurations, audit log inspections, reporting tools, and conversational access to Synapse AI.
-* **Project Manager**: Manages assigned projects, creates and delegates tasks, monitors budget utilization (spent vs. allocated), and reviews/approves expense claims filed under their projects.
-* **Employee**: Accesses their assigned tasks, updates task progress (status, percentage complete), files expense claims with receipt uploads, and tracks their own compensation logs.
+* **Administrator**: Full access to user profiles, status transitions (Approved, Pending, Suspended, Rejected), system audit trails, reporting metrics, and conversational database queries via Synapse AI.
+* **Project Manager**: Manages assigned projects, delegates tasks, monitors budget utilization (spent vs. allocated), and reviews expense claims filed under their projects.
+* **Employee**: Accesses assigned tasks, updates task progress (status, completion percentage), files expense claims with receipt uploads, and reviews personal task metrics.
 
 ---
 
-## ⚡ Features by Module
+## ⚙️ Features by Module
 
-### 🛡️ Authentication & System Security
-* **Multi-Stage Registration**: Collects credentials and secures account creation with email/mobile OTP verification and anti-bot geometric vector-path CAPTCHA drawing.
-* **Secure Admin Access**: Administrators log in via a dedicated endpoint protected by a secret passphrase and strict request rate limiters (`adminAuthLimiter`).
-* **Session Integrity**: Utilizes secure HTTPOnly JWT cookies (`accessToken` and `refreshToken`) to guard against XSS and CSRF.
-* **Honeypot Spam Filtering**: Silently intercepts and discards automated bot registrations via hidden form inputs.
+### 🔐 Authentication & Session Security
+* **Multi-Stage Registration**: Secures account enrollment using email/mobile OTP verification and a geometric vector-path CAPTCHA challenge.
+* **Administrator Portal Entry**: Administrators log in through a dedicated route protected by a secret passphrase and query rate limiters (`adminAuthLimiter`).
+* **Session Protection**: Implements HTTPOnly JWT cookies (`accessToken` and `refreshToken`) to mitigate XSS and CSRF risks.
+* **Spam Prevention**: Employs a hidden honeypot field in registration forms to intercept automated bot submissions.
 
 ### 📋 Project & Task Management
-* **Project Dashboard**: Tracks project name, start/end dates, priorities (Critical, High, Medium, Low), allocated budgets, and manager assignments.
-* **Progress Gauges**: Visual progress tracks showing project completion dynamically calculated as the average completion percentage of all underlying tasks.
-* **Responsive Task Calendar**: Features an interactive monthly calendar timeline displaying scheduled due dates. Wrapped in an adaptive horizontal scroll structure to support swipe gestures on mobile viewports.
-* **Document Attachments**: Supports linking PDF or image project documents directly to tasks.
+* **Project Tracking**: Manages project configurations, timelines, priorities, budgets, and manager assignments.
+* **Dynamic Progress Calculation**: Calculates project completion rates dynamically based on the average completion percentage of all underlying tasks.
+* **Responsive Task Calendar**: Renders an interactive monthly calendar displaying scheduled deadlines. Includes horizontal scroll containers to ensure readability and swipe usability on mobile screens.
+* **Document Management**: Supports linking project or task file paths directly inside the workspace.
 
-### 💰 Expense & Budget Control
-* **Filing & Categories**: Allows claimants to log expenses across standard categories (Travel, Food, Office Supplies, Software, Utilities, Miscellaneous).
-* **Multi-Format Receipt Attachments**: Direct file uploads managed via custom `multer` middleware, storing attachments securely on server disk directories.
-* **Real-Time Budget Warnings**: Displays color-coded warning tracks (Green for normal, Amber for warning, Rose for critical) as a project’s spent balance approaches or exceeds its allocated budget.
-* **Export Utilities**: Supports exporting tables and reports to standard CSV spreadsheets for external reporting.
+### 💰 Expense & Budget Auditing
+* **Categorized Expense Logging**: Supports logging operational expenses across standard categories (Travel, Food, Office Supplies, Software, Utilities, Miscellaneous).
+* **Receipt Attachments**: Handles file uploads (images or PDFs) using custom `multer` middleware, storing files in isolated disk directories on the server.
+* **Budget Threshold Visuals**: Renders color-coded warning bars (Green, Amber, Rose) based on the current ratio of approved expenses to the overall project budget.
+* **Spreadsheet Exports**: Supports exporting data lists directly to standard CSV files for offline analysis.
 
-### 🚨 System Accountability & Audits
-* **Chronological Audit Trail**: Captures user ID, performed action, targeted entity (User, Project, Task, Expense), IP address, and timestamp.
-* **Keystroke API Protection**: Search fields utilize debounced queries and submit actions to prevent keypress request storms on backend pools.
-* **Database Pagination**: Tables implement a 15-item paginated timeline to reduce client DOM node lag and database bandwidth consumption.
-* **System Notifications**: Centrally processes and renders contextual alert popups (e.g. "New Task Assigned", "Expense Approved") inside the navbar. Corrected with fixed viewport boundaries to prevent left-side clipping on small viewports.
+### 🚨 Audit & Accountability
+* **Chronological Logs**: Logs user ID, performed action, targeted entity (User, Project, Task, Expense), IP address, and timestamp.
+* **Keystroke API Protection**: Search fields utilize debounced queries and submit buttons to prevent request storms on backend connection pools.
+* **Paging Optimization**: Tables implement client-side pagination showing 15 items per page to reduce DOM lag and database load.
+* **System Notifications**: Distributes real-time alerts (e.g. task assignments, expense reviews) inside the global navigation header, configured to prevent viewport overflow on small viewports.
 
 ---
 
@@ -89,7 +89,7 @@ The platform aligns organizational layers—**Administrators, Project Managers, 
 
 ## 🤖 Synapse AI Copilot Architecture
 
-**Synapse AI** operates as a secure, context-aware operations intelligence assistant. Rather than relying on simple static prompt instructions, it implements a dynamic database **RAG (Retrieval-Augmented Generation)** workflow:
+**Synapse AI** functions as an operational intelligence utility using a database **RAG (Retrieval-Augmented Generation)** pattern:
 
 ```
 [User Message] 
@@ -107,40 +107,40 @@ The platform aligns organizational layers—**Administrators, Project Managers, 
 [Stream response back to Client]
 ```
 
-### Context Injection details:
-1. When an admin posts a message, `aiController.js` calls `getDatabaseContextSummary()` inside `aiService.js`.
-2. This service queries the live database connection pools to extract:
-   * Active registered users and their departments.
-   * Active projects, allocated budgets, manager associations, and current approved spent sums.
-   * Active tasks, assigned employees, completion percentages, and due dates.
-   * Recent chronological system audit trails.
-3. The database metrics are formatted into clean Markdown tables and injected directly into the `systemInstruction` configuration.
-4. The backend dispatches a direct secure REST request via HTTPS `fetch` to Google's `gemini-2.5-flash` model. 
-5. Bypassing older Node SDK key prefix requirements allows the server to authenticate both traditional and new fast-revoking `AQ.` Gemini keys securely.
+### Context Injection Workflow:
+1. The user sends a query through the UI chat widget.
+2. `aiController.js` calls `getDatabaseContextSummary()` inside `aiService.js`.
+3. The service queries live connection pools to pull current database statistics:
+   * Registered users, roles, statuses, and departments.
+   * Project metadata, assigned managers, allocated budgets, and utilized spent values.
+   * Assigned tasks, progress percentages, and deadlines.
+   * Recent chronological system audit activities.
+4. The service compiles these metrics into structured Markdown tables and injects them directly as context into the `systemInstruction` prompt block.
+5. The backend dispatches a direct HTTPS `fetch` request to the Google Gemini API (`gemini-2.5-flash` model), bypassing older SDK prefix requirements to support both standard and new `AQ.` fast-revoking keys.
 
 ---
 
 ## 🛠️ Technology Stack
 
-* **Frontend**: React 19, Vite, Tailwind CSS v4, TanStack React Query, Framer Motion, Recharts.
-* **Backend**: Node.js, Express.js, JWT Cookie Parser, Multer (File Uploads), SVG-CAPTCHA (anti-bot security).
-* **Database**: Microsoft SQL Server (MSSQL) with customized connection pooling (`max: 10, min: 0, idleTimeoutMillis: 30000`).
-* **API Integration**: Direct Google Gemini REST Endpoint (`gemini-2.5-flash`).
+* **Frontend**: React 19, Vite, Tailwind CSS, TanStack React Query, Framer Motion, Recharts.
+* **Backend**: Node.js, Express.js, JWT Cookie Parser, Multer, SVG-CAPTCHA.
+* **Database**: Microsoft SQL Server (MSSQL) with customized connection pooling configuration.
+* **API Integration**: Direct Google Gemini REST Endpoints (`gemini-2.5-flash`).
 
 ---
 
-## 💾 Database Schema & Architecture
+## 💾 Database Architecture
 
-The SQL Server database is structured using normalized relational tables optimized with standard indices.
+The SQL Server database is structured using normalized relational tables and optimized with standard indices to support fast nested joins.
 
-### Major Database Tables:
-* `users`: Stores user metadata (first_name, last_name, email, role ['admin', 'manager', 'employee', 'pending'], status ['pending', 'approved', 'rejected', 'suspended'], mobile_number, email_verified, failed_login_attempts, account_locked_until).
-* `projects`: Tracks project configurations, descriptions, manager IDs, priorities, budgets, manual_completion_percentage, and document_path.
-* `tasks`: Stores delegated tasks, titles, due dates, completion percentages, assigned employees, and associated project IDs.
-* `expenses`: Stores financial claims (amount, category, claimant user_id, associated project_id, status ['PENDING', 'APPROVED', 'REJECTED'], manager_approval status, and task_id).
-* `expense_attachments`: Links uploaded receipts, paths, sizes, and mime types.
-* `audit_logs`: Chronological audit logs capturing user ID, performed action, targeted entity name/ID, IP address, and timestamp.
-* `otp_verifications`: Tracks resend attempts, hashes, and expiration boundaries.
+### Key Database Tables:
+* `users`: Stores user credentials, email verification flags, lock timers, department IDs, role mappings (`admin`, `manager`, `employee`, `pending`), and status configurations (`pending`, `approved`, `rejected`, `suspended`).
+* `projects`: Tracks project timelines, priorities, budgets, manual completion ratios, document directories, and manager assignments.
+* `tasks`: Stores operational task details, deadlines, completion percentages, assigned employees, and project foreign keys.
+* `expenses`: Stores financial claims (amount, category, claimant user_id, associated project_id, status ['PENDING', 'APPROVED', 'REJECTED'], manager approval status, and task_id).
+* `expense_attachments`: Links uploaded receipts, file sizes, local storage paths, and mime types.
+* `audit_logs`: Chronological log entries capturing user ID, performed action, targeted entity name/ID, IP address, and timestamp.
+* `otp_verifications`: Tracks verification hashes, resend counters, and expiration boundaries.
 
 ---
 
@@ -150,13 +150,13 @@ The SQL Server database is structured using normalized relational tables optimiz
 task-expense-management/
 ├── client/                     # React Frontend Workspace
 │   ├── src/
-│   │   ├── api/                # Axios instances & interceptors
-│   │   ├── components/         # Shared UI, Modals, & Navbar
-│   │   ├── config/             # Third-party credentials (Firebase)
+│   │   ├── api/                # Axios instance & interceptors
+│   │   ├── components/         # Reusable UI, Modals, & Navbar
+│   │   ├── config/             # Third-party configurations
 │   │   ├── context/            # AuthContext, ThemeContext
 │   │   ├── layouts/            # Dashboard layouts
-│   │   ├── pages/              # Portal pages grouped by role (admin, manager, employee)
-│   │   ├── routes/             # AppRoutes, ProtectedRoute configurations
+│   │   ├── pages/              # Portal pages grouped by user role
+│   │   ├── routes/             # AppRoutes & Route guards
 │   │   └── services/           # Api service wrappers (projects, tasks, expenses)
 │   └── index.html
 ├── server/                     # Express Backend Workspace
@@ -165,13 +165,13 @@ task-expense-management/
 │   │   ├── controllers/        # Express API request controllers
 │   │   ├── database/           # Seed scripts (seed.js)
 │   │   ├── middlewares/        # JWT auth, role validation, file upload config
-│   │   ├── repositories/       # SQL Server parameterized query layer
+│   │   ├── repositories/       # Parameterized SQL Server queries
 │   │   ├── routes/             # API routing endpoints
-│   │   ├── services/           # Service RAG calculations (aiService)
-│   │   └── utils/              # CAPTCHA drawings, mailers, response wrappers
+│   │   ├── services/           # Service calculations (aiService)
+│   │   └── utils/              # CAPTCHA generation, mailers, response wrappers
 │   └── package.json
 └── database/
-    └── migration.sql           # Complete SQL Server relational schema script
+    └── migration.sql           # Database schema & migration script
 ```
 
 ---
@@ -180,20 +180,20 @@ task-expense-management/
 
 ### Authentication & Sessions
 * `GET /api/v1/auth/captcha` — Generates anti-bot CAPTCHA drawing.
-* `POST /api/v1/auth/register` — Requests public account enrollment.
+* `POST /api/v1/auth/register` — Submits a registration request.
 * `POST /api/v1/auth/login` — Authenticates credentials & sets secure cookies.
 * `POST /api/v1/auth/secure-admin-login` — Rate-limited administrator clearance.
-* `POST /api/v1/auth/logout` — Destroys active tokens & clears session cookies.
+* `POST /api/v1/auth/logout` — Clears active session tokens and cookies.
 
 ### Projects & Task Allocations
 * `GET /api/v1/projects` — Lists active projects.
-* `POST /api/v1/projects` — Creates new project (Admin clearance).
+* `POST /api/v1/projects` — Creates a new project (Admin clearance).
 * `GET /api/v1/tasks` — Fetches operational tasks.
-* `POST /api/v1/tasks` — Delegates task to employee (Manager clearance).
+* `POST /api/v1/tasks` — Delegates a task to an employee (Manager clearance).
 
 ### Expenses & Financial Claims
 * `GET /api/v1/expenses` — Retrieves filtered expense claims.
-* `POST /api/v1/expenses` — Files new claim with receipt attachment (Multer upload).
+* `POST /api/v1/expenses` — Files a new claim with receipt attachment (Multer upload).
 * `PATCH /api/v1/expenses/:id/review` — Approves or rejects claims (Manager/Admin clearance).
 
 ### Synapse AI Copilot
@@ -206,8 +206,8 @@ task-expense-management/
 ### 1. Database Setup
 1. Log in to your Microsoft SQL Server instance.
 2. Create a new database named `task_expense_db`.
-3. Open and run the complete `/database/migration.sql` script to initialize the relational schema, tables, triggers, and indices.
-4. To populate dummy corporate tracking datasets, run the database seed command inside the `/server` directory:
+3. Execute the `/database/migration.sql` script to initialize the relational schema, tables, triggers, and indices.
+4. Populate database tracking tables with seed records by running this command inside the `/server` directory:
    ```bash
    npm run seed
    ```
@@ -246,7 +246,7 @@ task-expense-management/
    ```bash
    npm install
    ```
-3. Boot the local development hot-reload server:
+3. Boot the local development server:
    ```bash
    npm run dev
    ```
@@ -256,38 +256,20 @@ task-expense-management/
 
 ## 📊 Environment Variables Checklist
 
-Ensure the following variables are configured locally in your environment files (note that `.env` files are blocked from Git tracking via `.gitignore` for security):
+Ensure the following variables are configured locally in your environment files (note that `.env` files are ignored from Git tracking for security):
 
 | Variable Name | Description | Required In |
 |---|---|---|
-| `PORT` | Local host port mapped to backend server. | Backend `.env` |
+| `PORT` | Host port mapped to the backend server. | Backend `.env` |
 | `DB_USER` | Microsoft SQL Server system login username. | Backend `.env` |
 | `DB_PASSWORD` | Microsoft SQL Server system login password. | Backend `.env` |
 | `DB_SERVER` | Target database server address (e.g. `localhost`). | Backend `.env` |
-| `DB_DATABASE` | Target schema database name (`task_expense_db`). | Backend `.env` |
+| `DB_DATABASE` | Target database name (`task_expense_db`). | Backend `.env` |
 | `JWT_SECRET` | Signing key used to verify HTTPOnly session cookies. | Backend `.env` |
-| `GEMINI_API_KEY` | Google API key used to query the Gemini RAG model. | Backend `.env` |
-
----
-
-## 📸 Screenshots
-
-*Include visual representations of active dashboards here:*
-
-* **Admin Operations Control Panel**  
-  ![Admin Cockpit](https://placehold.co/800x450/f8fafc/0f172a?text=Admin+Dashboard+Overview)
-
-* **Manager Project & Budget Tracker Grid**  
-  ![Manager Project Cockpit](https://placehold.co/800x450/f8fafc/0f172a?text=Manager+Project+Cards+Grid)
-
-* **Synapse AI RAG Copilot Chat Widget**  
-  ![Synapse AI Widget](https://placehold.co/800x450/f8fafc/0f172a?text=Synapse+AI+Chat+Interface)
+| `GEMINI_API_KEY` | Google API key used to query the Gemini model. | Backend `.env` |
 
 ---
 
 ## 🔮 Future Enhancements
 
-Genuine feature upgrades planned for upcoming sprints:
-* **Real-time Operations Sync**: Integrate WebSockets (`socket.io`) to stream notifications (e.g. task assignments, expense claims) live to dashboards without requiring manual page reloads.
-* **Inline Document Review Panel**: Embed interactive document sliders inside the Expense list and Task detail modals to view, rotate, and zoom uploaded receipt images or PDF files directly within the portal.
-* **Workforce Heatmap Reports**: Implement allocation charts mapping assigned tasks against team member bandwidth to identify bottleneck allocations.
+* Additional features can be added in the future as per business requirements.
