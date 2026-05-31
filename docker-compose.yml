@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------------------
+  # Server API Service (Express.js API)
+  # ----------------------------------------------------
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: task-expense-server
+    restart: always
+    ports:
+      - "5000:5000"
+    # Mount environment variables directly from server/.env
+    env_file:
+      - ./server/.env
+    # Persistent storage for uploaded receipt files
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - app-network
+    # On Windows/macOS Docker Desktop, this adds host.docker.internal mapping to reach host SQL Server
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # ----------------------------------------------------
+  # Client Web Service (React Vite + Nginx)
+  # ----------------------------------------------------
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: task-expense-client
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+    networks:
+      - app-network
+
+# Network bridge linking services
+networks:
+  app-network:
+    driver: bridge
+
+# Volumes for data persistence
+volumes:
+  uploads_data:
+    driver: local
