@@ -25,7 +25,7 @@ const ProtectedRoute = () => {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-            className="w-12 h-12 rounded-full border-4 border-white/5 border-t-blue-500"
+            className="w-12 h-12 rounded-full border-4 border-slate-200 border-t-blue-500"
           />
           <motion.p
             initial={{ opacity: 0.5 }}

@@ -11,15 +11,31 @@ const AppError = require(
 // STORAGE CONFIG
 // ============================================
 
+const fs = require("fs");
+
 const storage = multer.diskStorage({
   destination: (
     req,
     file,
     cb
   ) => {
+    let dest = "src/uploads/expenses";
+    if (req.originalUrl.includes("/projects") || req.path.includes("/projects")) {
+      dest = "src/uploads/projects";
+    } else if (req.originalUrl.includes("/tasks") || req.path.includes("/tasks")) {
+      dest = "src/uploads/tasks";
+    } else if (req.originalUrl.includes("/users") || req.path.includes("/profile")) {
+      dest = "src/uploads/profiles";
+    }
+    
+    // Ensure the folder exists
+    if (!fs.existsSync(dest)) {
+      fs.mkdirSync(dest, { recursive: true });
+    }
+    
     cb(
       null,
-      "src/uploads/expenses"
+      dest
     );
   },
 

@@ -89,17 +89,17 @@ const LoginPage = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-md"
       >
-        <div className="glass-panel bg-[var(--bg-secondary)] rounded-3xl p-8 md:p-10 border border-slate-200 dark:border-slate-800/80 shadow-2xl relative">
+        <div className="glass-panel bg-[var(--bg-secondary)] rounded-3xl p-8 md:p-10 border border-slate-200 shadow-2xl relative">
           
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30 text-white text-2xl mb-4">
               <FaCheckDouble />
             </div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+            <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] mb-2">
               Task & Expense Management System
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+            <p className="text-sm text-[var(--text-secondary)] font-medium">
               Employee & Manager Workspace Login
             </p>
           </div>
@@ -108,18 +108,19 @@ const LoginPage = () => {
             
             {/* Username/Email/Mobile input */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Email Address or Mobile Number
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500">
                   <FaEnvelope />
                 </span>
                 <input
                   type="text"
                   placeholder="name@company.com or mobile number"
+                  autoComplete="off"
                   {...register("emailOrMobile", { required: "Email address or Mobile number is required" })}
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder-slate-450 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:bg-white dark:focus:bg-slate-950/80 transition-all duration-200"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all duration-200"
                 />
               </div>
               {errors.emailOrMobile && (
@@ -130,7 +131,7 @@ const LoginPage = () => {
             {/* Password input */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Password
                 </label>
                 <Link
@@ -141,14 +142,15 @@ const LoginPage = () => {
                 </Link>
               </div>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500">
                   <FaLock />
                 </span>
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
+                  autoComplete="new-password"
                   {...register("password", { required: "Password is required" })}
-                  className="w-full pl-11 pr-11 py-3.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:bg-white dark:focus:bg-slate-950/80 transition-all duration-200"
+                  className="w-full pl-11 pr-11 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all duration-200"
                 />
                 <button
                   type="button"
@@ -187,8 +189,8 @@ const LoginPage = () => {
           </form>
 
           {/* Footer links */}
-          <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/80 text-center">
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+            <p className="text-xs text-slate-500 font-medium">
               Don't have an account yet?{" "}
               <Link to="/register" className="text-blue-600 hover:text-blue-500 font-bold transition-colors">
                 Register Publicly

@@ -32,6 +32,8 @@ const {
 );
 
 
+const upload = require("../middlewares/uploadMiddleware");
+
 // ============================================
 // PROJECT ROUTES
 // ============================================
@@ -43,6 +45,7 @@ router.post(
     "ADMIN",
     "MANAGER"
   ),
+  upload.single("document"),
   createProjectValidation,
   validateMiddleware,
   createProject
@@ -61,6 +64,7 @@ router.put(
     "ADMIN",
     "MANAGER"
   ),
+  upload.single("document"),
   updateProjectValidation,
   validateMiddleware,
   updateProject

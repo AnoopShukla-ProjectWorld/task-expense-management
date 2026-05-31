@@ -16,12 +16,16 @@ function TaskModal({ isOpen, onClose, onSubmit, loading, initialData, defaultPro
     enabled: isOpen,
   });
 
-  // Fetch employees dynamically for assignment select
-  const { data: employees } = useQuery({
-    queryKey: ["users", "EMPLOYEE"],
-    queryFn: () => getUsers({ role: "EMPLOYEE" }),
+  // Fetch all active users dynamically for assignment select
+  const { data: users } = useQuery({
+    queryKey: ["users"],
+    queryFn: () => getUsers({ limit: 10000 }),
     enabled: isOpen,
   });
+
+  const activeUsers = users || [];
+  const managers = activeUsers.filter((u) => u.role?.toLowerCase() === "manager");
+  const employees = activeUsers.filter((u) => u.role?.toLowerCase() === "employee");
 
   useEffect(() => {
     if (isOpen) {
@@ -63,11 +67,21 @@ function TaskModal({ isOpen, onClose, onSubmit, loading, initialData, defaultPro
   if (!isOpen) return null;
 
   const handleFormSubmit = (data) => {
+    let completionPercentage = parseInt(data.completion_percentage || 0);
+    let status = data.status;
+
+    if (status === "COMPLETED") {
+      completionPercentage = 100;
+    } else if (completionPercentage === 100) {
+      status = "COMPLETED";
+    }
+
     const payload = {
       ...data,
-      project_id: parseInt(data.project_id),
+      project_id: data.project_id ? parseInt(data.project_id) : null,
       assigned_to: parseInt(data.assigned_to),
-      completion_percentage: parseInt(data.completion_percentage || 0),
+      status,
+      completion_percentage: completionPercentage,
     };
     onSubmit(payload);
   };
@@ -90,7 +104,7 @@ function TaskModal({ isOpen, onClose, onSubmit, loading, initialData, defaultPro
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.95, y: 15, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="w-full max-w-lg glass-panel rounded-3xl p-6.5 border border-white/10 shadow-2xl relative overflow-hidden z-10 my-8"
+          className="w-full max-w-lg glass-panel rounded-3xl p-6.5 border border-[var(--border-color)] shadow-2xl relative overflow-hidden z-10 my-8"
         >
           {/* Decorative background ambient lighting */}
           <div className="absolute -right-12 -bottom-12 w-32 h-32 rounded-full bg-violet-500/10 blur-3xl pointer-events-none" />
@@ -123,6 +137,7 @@ function TaskModal({ isOpen, onClose, onSubmit, loading, initialData, defaultPro
                   type="text"
                   placeholder="Review Database Architecture"
                   required
+                  autoComplete="off"
                   {...register("title", { required: "Task title is required" })}
                   className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/10 focus:bg-[var(--bg-secondary)] transition-all"
                 />
@@ -154,12 +169,11 @@ function TaskModal({ isOpen, onClose, onSubmit, loading, initialData, defaultPro
                   <FaProjectDiagram className="text-sm" />
                 </span>
                 <select
-                  required
-                  {...register("project_id", { required: "Project is required" })}
+                  {...register("project_id")}
                   disabled={!!defaultProjectId}
                   className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/10 cursor-pointer transition-all disabled:opacity-50 focus:bg-[var(--bg-secondary)]"
                 >
-                  <option value="" disabled className="bg-[var(--bg-secondary)] text-[var(--text-secondary)]">Select Project Scope</option>
+                  <option value="" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">General Task (No Project Bound)</option>
                   {projects?.map((p) => (
                     <option key={p.id} value={p.id} className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">
                       {p.project_name}
@@ -183,12 +197,25 @@ function TaskModal({ isOpen, onClose, onSubmit, loading, initialData, defaultPro
                   {...register("assigned_to", { required: "Assignee is required" })}
                   className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/10 cursor-pointer transition-all focus:bg-[var(--bg-secondary)]"
                 >
-                  <option value="" disabled className="bg-[var(--bg-secondary)] text-[var(--text-secondary)]">Select Operator</option>
-                  {employees?.map((emp) => (
-                    <option key={emp.id} value={emp.id} className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">
-                      {emp.full_name} ({emp.email})
-                    </option>
-                  ))}
+                  <option value="" disabled className="bg-[var(--bg-secondary)] text-[var(--text-secondary)]">Select Associate</option>
+                  {managers.length > 0 && (
+                    <optgroup label="Managers">
+                      {managers.map((m) => (
+                        <option key={m.id} value={m.id} className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">
+                          💼 {m.full_name} ({m.email})
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {employees.length > 0 && (
+                    <optgroup label="Employees">
+                      {employees.map((emp) => (
+                        <option key={emp.id} value={emp.id} className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">
+                          👤 {emp.full_name} ({emp.email})
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
               {errors.assigned_to && (
@@ -205,10 +232,34 @@ function TaskModal({ isOpen, onClose, onSubmit, loading, initialData, defaultPro
                   </span>
                   <input
                     type="date"
-                    {...register("start_date")}
+                    min={(() => {
+                      if (initialData?.start_date) {
+                        try {
+                          return new Date(initialData.start_date).toISOString().split("T")[0];
+                        } catch (e) {}
+                      }
+                      const d = new Date();
+                      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                    })()}
+                    {...register("start_date", {
+                      validate: (val) => {
+                        if (!val) return true;
+                        if (!initialData) {
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          const selected = new Date(val);
+                          selected.setHours(0, 0, 0, 0);
+                          return selected >= today || "Start date cannot be in the past";
+                        }
+                        return true;
+                      }
+                    })}
                     className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/10 transition-all focus:bg-[var(--bg-secondary)]"
                   />
                 </div>
+                {errors.start_date && (
+                  <p className="text-xs text-rose-400 font-bold mt-1">{errors.start_date.message}</p>
+                )}
               </div>
 
               <div className="flex flex-col gap-1">
@@ -219,6 +270,10 @@ function TaskModal({ isOpen, onClose, onSubmit, loading, initialData, defaultPro
                   </span>
                   <input
                     type="date"
+                    min={startDateWatch || (() => {
+                      const d = new Date();
+                      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                    })()}
                     {...register("due_date", {
                       validate: (val) => {
                         if (!val) return true;
@@ -286,6 +341,7 @@ function TaskModal({ isOpen, onClose, onSubmit, loading, initialData, defaultPro
                     min="0"
                     max="100"
                     placeholder="0"
+                    autoComplete="off"
                     {...register("completion_percentage", {
                       min: { value: 0, message: "Min is 0%" },
                       max: { value: 100, message: "Max is 100%" },

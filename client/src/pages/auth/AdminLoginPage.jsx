@@ -10,7 +10,6 @@ import {
   FaShieldAlt,
   FaSpinner,
   FaRedo,
-  FaCheckDouble,
   FaArrowLeft
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
@@ -19,10 +18,8 @@ import { secureAdminLoginApi, getCaptchaApi } from "../../services/authService";
 const AdminLoginPage = () => {
   const navigate = useNavigate();
   const { setUser } = useAuth();
-  const canvasRef = useRef(null);
-
   // States
-  const [captchaText, setCaptchaText] = useState("");
+  const [captchaImage, setCaptchaImage] = useState("");
   const [captchaHash, setCaptchaHash] = useState("");
   const [isCaptchaLoading, setIsCaptchaLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,7 +36,7 @@ const AdminLoginPage = () => {
     try {
       const response = await getCaptchaApi();
       if (response.success) {
-        setCaptchaText(response.data.text);
+        setCaptchaImage(response.data.image);
         setCaptchaHash(response.data.hash);
       }
     } catch (err) {
@@ -52,58 +49,6 @@ const AdminLoginPage = () => {
   useEffect(() => {
     fetchCaptcha();
   }, []);
-
-  // Draw CAPTCHA on HTML canvas
-  useEffect(() => {
-    if (canvasRef.current && captchaText) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw background noise
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      gradient.addColorStop(0, "#fef2f2");
-      gradient.addColorStop(1, "#fee2e2");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Distortions: draw random noise lines
-      ctx.strokeStyle = "#fca5a5";
-      ctx.lineWidth = 1.5;
-      for (let i = 0; i < 4; i++) {
-        ctx.beginPath();
-        ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
-        ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
-        ctx.stroke();
-      }
-
-      // Draw captcha text with unique distortions
-      ctx.font = "bold 26px 'Outfit', sans-serif";
-      ctx.textBaseline = "middle";
-      const charWidth = canvas.width / 6;
-
-      for (let i = 0; i < captchaText.length; i++) {
-        ctx.fillStyle = ["#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#e11d48"][Math.floor(Math.random() * 5)];
-        ctx.save();
-        // Skew & rotate
-        const x = i * charWidth + charWidth / 2;
-        const y = canvas.height / 2 + (Math.random() * 8 - 4);
-        const angle = (Math.random() * 40 - 20) * Math.PI / 180;
-        ctx.translate(x, y);
-        ctx.rotate(angle);
-        ctx.fillText(captchaText[i], -10, 10);
-        ctx.restore();
-      }
-
-      // Add random dots
-      for (let i = 0; i < 30; i++) {
-        ctx.fillStyle = "#f87171";
-        ctx.beginPath();
-        ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1.5, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-    }
-  }, [captchaText]);
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
@@ -157,17 +102,17 @@ const AdminLoginPage = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-md z-10"
       >
-        <div className="glass-panel bg-[var(--bg-secondary)] rounded-3xl p-8 sm:p-10 border border-slate-200 dark:border-slate-800/80 shadow-2xl relative">
+        <div className="glass-panel bg-white rounded-3xl p-8 sm:p-10 border border-slate-200 shadow-2xl relative">
           
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600 to-red-600 shadow-md shadow-rose-500/20 text-white text-2xl mb-4">
               <FaShieldAlt />
             </div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-2">
               Secure Administrative Login
             </h2>
-            <p className="text-xs text-rose-600 dark:text-rose-400 font-bold uppercase tracking-wider">
+            <p className="text-xs text-rose-600 font-bold uppercase tracking-wider">
               Classified Access Only
             </p>
           </div>
@@ -176,18 +121,18 @@ const AdminLoginPage = () => {
             
             {/* Email Address */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Administrative Email
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
                   <FaEnvelope />
                 </span>
                 <input
                   type="email"
                   placeholder="admin@system.com"
                   {...register("email", { required: "Email is required" })}
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:border-rose-500 dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white dark:focus:bg-slate-950/80 transition-all duration-200"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white transition-all duration-200"
                 />
               </div>
               {errors.email && (
@@ -197,18 +142,18 @@ const AdminLoginPage = () => {
 
             {/* Password */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Master Password
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
                   <FaLock />
                 </span>
                 <input
                   type="password"
                   placeholder="••••••••"
                   {...register("password", { required: "Password is required" })}
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:border-rose-500 dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white dark:focus:bg-slate-950/80 transition-all duration-200"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white transition-all duration-200"
                 />
               </div>
               {errors.password && (
@@ -218,18 +163,18 @@ const AdminLoginPage = () => {
 
             {/* Secret Passphrase */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Secret Passphrase Key
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
                   <FaKey />
                 </span>
                 <input
                   type="password"
                   placeholder="Secret passphrase..."
                   {...register("secretPassphrase", { required: "Secret passphrase key is required" })}
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:border-rose-500 dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white dark:focus:bg-slate-950/80 transition-all duration-200"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white transition-all duration-200"
                 />
               </div>
               {errors.secretPassphrase && (
@@ -238,9 +183,9 @@ const AdminLoginPage = () => {
             </div>
 
             {/* CAPTCHA SECTION */}
-            <div className="bg-slate-50 dark:bg-slate-900/30 p-4 border border-slate-200 dark:border-slate-800/80 rounded-2xl space-y-4">
+            <div className="bg-slate-50 p-4 border border-slate-200 rounded-2xl space-y-4">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Mandatory Anti-Brute Force Shield
                 </label>
                 <button
@@ -253,17 +198,20 @@ const AdminLoginPage = () => {
               </div>
 
               <div className="flex gap-4 items-center">
-                <canvas 
-                  ref={canvasRef} 
-                  width={150} 
-                  height={50} 
-                  className="rounded-xl border border-red-200 shadow-sm bg-slate-100 flex-shrink-0"
-                />
+                {captchaImage ? (
+                  <img 
+                    src={captchaImage} 
+                    alt="CAPTCHA Challenge" 
+                    className="rounded-xl border border-red-200 shadow-sm bg-white flex-shrink-0 h-[50px] w-[150px] object-cover" 
+                  />
+                ) : (
+                  <div className="rounded-xl border border-red-200 shadow-sm bg-white flex-shrink-0 h-[50px] w-[150px] animate-pulse bg-red-50" />
+                )}
                 <input
                   type="text"
                   placeholder="CAPTCHA Code"
                   {...register("captchaInput", { required: "CAPTCHA is required" })}
-                  className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-center font-bold tracking-wider placeholder-slate-400 focus:outline-none focus:border-rose-500 transition-colors uppercase"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-center font-bold tracking-wider placeholder-slate-400 focus:outline-none focus:border-rose-500 transition-colors uppercase"
                 />
               </div>
               {errors.captchaInput && (

@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import DataTable from "../../components/tables/DataTable";
 import EmptyState from "../../components/common/EmptyState";
 import { FaFileDownload, FaReceipt, FaCheck, FaTimes, FaEye } from "react-icons/fa";
+import { handleSafeDownload } from "../../utils/fileUtils";
 
 function ExpenseApprovalsPage() {
   const { user } = useAuth();
@@ -70,11 +71,11 @@ function ExpenseApprovalsPage() {
 
   const getCategoryBadge = (category) => {
     const badges = {
-      TRAVEL: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
-      FOOD: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30",
-      ACCOMMODATION: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30",
-      OFFICE_SUPPLIES: "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/30",
-      MISCELLANEOUS: "bg-slate-500/10 text-[var(--text-secondary)] border-[var(--border-color)]",
+      HARDWARE: "bg-blue-500/10 text-blue-600 border-blue-500/30",
+      SOFTWARE_LICENSE: "bg-purple-500/10 text-purple-600 border-purple-500/30",
+      TRAVEL_TRAVEL: "bg-cyan-500/10 text-cyan-600 border-cyan-500/30",
+      MEALS_REFRESHMENT: "bg-orange-500/10 text-orange-600 border-orange-500/30",
+      TRAINING_MEMBERSHIP: "bg-indigo-500/10 text-indigo-600 border-indigo-500/30",
     };
     return badges[category] || "bg-slate-500/10 text-[var(--text-secondary)] border-[var(--border-color)]";
   };
@@ -98,9 +99,18 @@ function ExpenseApprovalsPage() {
       ),
     },
     {
-      key: "project_name",
-      title: "Project",
-      render: (row) => row.project_name || "—",
+      key: "task_title",
+      title: "Assigned Task",
+      render: (row) => (
+        <div>
+          <p className="font-semibold text-[var(--text-primary)] truncate max-w-[150px]">
+            {row.task_title || <span className="text-[var(--text-secondary)] italic text-xs font-sans">General / Unlinked</span>}
+          </p>
+          {row.project_name && (
+            <p className="text-3xs text-[var(--text-secondary)]/70 font-sans tracking-wide mt-0.5">Project: {row.project_name}</p>
+          )}
+        </div>
+      ),
     },
     {
       key: "category",
@@ -119,17 +129,34 @@ function ExpenseApprovalsPage() {
     {
       key: "status",
       title: "Status",
-      render: (row) => (
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase border ${
-          row.status === "APPROVED"
-            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-            : row.status === "REJECTED"
-            ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
-            : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 animate-pulse"
-        }`}>
-          {row.status}
-        </span>
-      ),
+      render: (row) => {
+        if (row.status === "APPROVED") {
+          return (
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase border bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+              Approved
+            </span>
+          );
+        }
+        if (row.status === "REJECTED") {
+          return (
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase border bg-rose-500/10 text-rose-600 border-rose-500/30">
+              Rejected
+            </span>
+          );
+        }
+        if (row.manager_approval === "APPROVED") {
+          return (
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase border bg-indigo-500/10 text-indigo-600 border-indigo-500/30">
+              Manager Approved, Pending Admin
+            </span>
+          );
+        }
+        return (
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase border bg-amber-500/10 text-amber-600 border-amber-500/30 animate-pulse">
+            Pending Review
+          </span>
+        );
+      },
     },
     {
       key: "receipt",
@@ -138,14 +165,12 @@ function ExpenseApprovalsPage() {
         if (!row.attachment_name) return <span className="text-xs text-[var(--text-secondary)] italic">No receipt</span>;
         const fileUrl = `${backendBaseUrl}/uploads/expenses/${row.attachment_name}`;
         return (
-          <a
-            href={fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--bg-primary)]/40 hover:bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg text-xs font-bold border border-[var(--border-color)] transition-colors cursor-pointer"
+          <button
+            onClick={() => handleSafeDownload(fileUrl)}
+            className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--bg-primary)]/40 hover:bg-[var(--bg-primary)] text-[var(--text-primary)] rounded-lg text-xs font-bold border border-[var(--border-color)] transition-colors cursor-pointer focus:outline-none"
           >
             <FaFileDownload /> View File
-          </a>
+          </button>
         );
       },
     },
@@ -153,7 +178,7 @@ function ExpenseApprovalsPage() {
       key: "actions",
       title: "Actions",
       render: (row) => {
-        if (row.status !== "PENDING") {
+        if (row.status !== "PENDING" || row.manager_approval === "APPROVED") {
           return (
             <button
               onClick={() => {
@@ -210,7 +235,7 @@ function ExpenseApprovalsPage() {
       )}
 
       {reviewItem && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-800/40 backdrop-blur-sm flex justify-center items-center p-4">
           <div className="glass-panel bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200 text-[var(--text-primary)]">
             <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)] flex items-center gap-2">
               <FaReceipt className="text-blue-500" />
@@ -317,3 +342,4 @@ function ExpenseApprovalsPage() {
 }
 
 export default ExpenseApprovalsPage;
+

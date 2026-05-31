@@ -1,17 +1,25 @@
 import axiosInstance from "../api/axios";
 
-export const getExpenses = async () => {
-  const response = await axiosInstance.get("/expenses");
+export const getExpenses = async (params = {}) => {
+  const response = await axiosInstance.get("/expenses", { params });
   return response.data.data;
 };
 
 export const createExpense = async (data) => {
-  const response = await axiosInstance.post("/expenses", data);
+  const response = await axiosInstance.post("/expenses", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data;
 };
 
 export const updateExpense = async (id, data) => {
-  const response = await axiosInstance.put(`/expenses/${id}`, data);
+  const response = await axiosInstance.put(`/expenses/${id}`, data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data;
 };
 

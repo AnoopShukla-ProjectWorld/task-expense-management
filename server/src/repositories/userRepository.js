@@ -103,6 +103,7 @@ const findUserByEmail = async (email) => {
         u.gender,
         u.date_of_birth,
         u.password_hash,
+        u.profile_image,
         u.status,
         u.role,
         u.email_verified,
@@ -138,6 +139,7 @@ const findUserById = async (userId) => {
         u.mobile_number,
         u.gender,
         u.date_of_birth,
+        u.profile_image,
         u.status,
         u.role,
         u.email_verified,
@@ -163,8 +165,10 @@ const getUsers = async ({
   search,
   role,
   status,
-}) => {
-  const offset = (page - 1) * limit;
+} = {}) => {
+  const parsedPage = Math.max(1, Number(page) || 1);
+  const parsedLimit = Math.max(1, Number(limit) || 100000);
+  const offset = (parsedPage - 1) * parsedLimit;
 
   let query = `
     SELECT
@@ -177,6 +181,7 @@ const getUsers = async ({
       u.mobile_number,
       u.gender,
       u.date_of_birth,
+      u.profile_image,
       u.status,
       u.role,
       u.email_verified,
@@ -213,7 +218,7 @@ const getUsers = async ({
   const request = pool
     .request()
     .input("offset", sql.Int, offset)
-    .input("limit", sql.Int, limit);
+    .input("limit", sql.Int, parsedLimit);
 
   if (search) request.input("search", sql.NVarChar, search);
   if (role) request.input("role", sql.NVarChar, role);
@@ -235,8 +240,26 @@ const updateUser = async (userId, data) => {
 
   request.input("userId", sql.Int, userId);
 
+  const allowedColumns = [
+    "first_name",
+    "last_name",
+    "email",
+    "employee_id",
+    "password_hash",
+    "profile_image",
+    "department_id",
+    "status",
+    "role",
+    "gender",
+    "date_of_birth",
+    "mobile_number",
+    "email_verified",
+    "failed_login_attempts",
+    "account_locked_until",
+  ];
+
   Object.entries(data).forEach(([key, value]) => {
-    if (value !== undefined) {
+    if (allowedColumns.includes(key) && value !== undefined) {
       fields.push(`${key} = @${key}`);
       request.input(key, value);
     }
@@ -259,6 +282,7 @@ const updateUser = async (userId, data) => {
       u.mobile_number,
       u.gender,
       u.date_of_birth,
+      u.profile_image,
       u.status,
       u.role,
       u.email_verified,

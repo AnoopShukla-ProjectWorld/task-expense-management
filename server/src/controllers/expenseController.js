@@ -13,6 +13,7 @@ const {
   updateExpenseStatusService,
   getExpenses,
   softDeleteExpense,
+  updateExpenseService,
 } = require(
   "../services/expenseService"
 );
@@ -71,6 +72,7 @@ const getAllExpenses =
             req.query.category,
           userId: req.user.id,
           userRole: req.user.role,
+          my: req.query.my === "true",
         });
 
       return successResponse(
@@ -135,9 +137,35 @@ const deleteExpense =
     }
   );
 
+// ============================================
+// UPDATE EXPENSE
+// ============================================
+const updateExpense =
+  asyncHandler(
+    async (req, res) => {
+      const expense =
+        await updateExpenseService(
+          {
+            expenseId: req.params.id,
+            userId: req.user.id,
+            body: req.body,
+            file: req.file,
+          }
+        );
+
+      return successResponse(
+        res,
+        200,
+        "Expense updated successfully",
+        expense
+      );
+    }
+  );
+
 module.exports = {
   createExpense,
   getAllExpenses,
   reviewExpense,
   deleteExpense,
+  updateExpense,
 };

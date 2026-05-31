@@ -35,8 +35,7 @@ const menuConfigs = {
   EMPLOYEE: [
     { name: "Dashboard", path: "/employee", icon: <FaChartBar /> },
     { name: "My Tasks", path: "/employee/tasks", icon: <FaTasks /> },
-    { name: "My Expenses", path: "/employee/expenses", icon: <FaMoneyBill /> },
-    { name: "My Profile", path: "/employee/profile", icon: <FaUser /> },
+    { name: "Task Expenses", path: "/employee/expenses", icon: <FaMoneyBill /> },
   ],
 };
 
@@ -54,7 +53,7 @@ function Sidebar({ onClose }) {
   };
 
   return (
-    <aside className="w-72 h-screen flex flex-col justify-between p-6 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] backdrop-blur-xl">
+    <aside className="w-72 h-screen flex flex-col justify-between p-6 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] backdrop-blur-xl overflow-y-auto overflow-x-auto max-w-full">
       <div>
         {/* Logo Header */}
         <div className="flex items-center justify-between mb-10">
@@ -92,7 +91,7 @@ function Sidebar({ onClose }) {
               className={({ isActive }) =>
                 `group flex items-center gap-3.5 px-4 py-3.5 rounded-2xl border transition-all duration-200 ${
                   isActive
-                    ? "bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400 shadow-md font-semibold dark:text-glow"
+                    ? "bg-blue-500/10 border-blue-500/30 text-blue-600 shadow-md font-semibold"
                     : "bg-transparent border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
                 }`
               }
@@ -109,15 +108,29 @@ function Sidebar({ onClose }) {
       {/* Profile & Logout Footer */}
       <div className="pt-6 border-t border-[var(--border-color)]">
         {/* User profile details snippet */}
-        <div className="flex items-center gap-3.5 p-3.5 bg-[var(--bg-tertiary)] rounded-2xl border border-[var(--border-color)] mb-4 shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold uppercase shadow-sm">
-            {(user?.full_name || user?.fullName) ? (user.full_name || user.fullName).charAt(0) : "U"}
-          </div>
+        <div 
+          onClick={() => {
+            if (onClose) onClose();
+            navigate(`/${role.toLowerCase()}/profile`);
+          }}
+          className="flex items-center gap-3.5 p-3.5 bg-[var(--bg-tertiary)] rounded-2xl border border-[var(--border-color)] mb-4 shadow-sm cursor-pointer hover:bg-[var(--bg-hover)] hover:border-blue-500/20 transition-all duration-200"
+        >
+          {user?.profile_image ? (
+            <img
+              src={`http://localhost:5000${user.profile_image}`}
+              alt={user.fullName || "User"}
+              className="w-10 h-10 rounded-xl object-cover border border-[var(--border-color)]"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold uppercase shadow-sm">
+              {(user?.full_name || user?.fullName) ? (user.full_name || user.fullName).charAt(0) : "U"}
+            </div>
+          )}
           <div className="flex-1 overflow-hidden">
             <h4 className="text-sm font-semibold truncate text-[var(--text-primary)]">
               {user?.full_name || user?.fullName || "User"}
             </h4>
-            <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
+            <p className="text-[10px] font-bold text-blue-600 tracking-widest uppercase">
               {role}
             </p>
           </div>

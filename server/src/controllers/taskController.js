@@ -26,9 +26,14 @@ const {
 
 const createTask = asyncHandler(
   async (req, res) => {
+    const taskData = { ...req.body };
+    if (req.file) {
+      taskData.document_path = `/uploads/tasks/${req.file.filename}`;
+    }
+
     const task =
       await createTaskService(
-        req.body,
+        taskData,
         req.user
       );
 
@@ -79,10 +84,15 @@ const getTasks = asyncHandler(
 
 const updateTask = asyncHandler(
   async (req, res) => {
+    const updateData = { ...req.body };
+    if (req.file) {
+      updateData.document_path = `/uploads/tasks/${req.file.filename}`;
+    }
+
     const task =
       await updateTaskService(
         req.params.id,
-        req.body,
+        updateData,
         req.user
       );
 

@@ -54,7 +54,7 @@ router.post(
 router.get(
   "/",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  roleMiddleware("ADMIN", "MANAGER"),
   getUsers
 );
 
@@ -111,6 +111,8 @@ router.put(
 );
 
 
+const upload = require("../middlewares/uploadMiddleware");
+
 // ============================================
 // PROFILE ROUTES
 // ============================================
@@ -124,6 +126,7 @@ router.get(
 router.put(
   "/profile/me",
   authMiddleware,
+  upload.single("profile_image"),
   updateUserValidation,
   validateMiddleware,
   updateProfile

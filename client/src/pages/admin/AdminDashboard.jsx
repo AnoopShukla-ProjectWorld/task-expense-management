@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { 
   FaUsers, FaTasks, FaMoneyBill, FaProjectDiagram, 
   FaUserShield, FaClock, FaCheckCircle, FaExclamationCircle, 
-  FaBan, FaHistory, FaNetworkWired, FaCircle
+  FaBan, FaHistory, FaNetworkWired, FaCircle, FaWallet
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { 
@@ -12,6 +12,8 @@ import {
 import DashboardCard from "../../components/dashboard/DashboardCard";
 import PageLoader from "../../components/loaders/PageLoader";
 import { getAdminDashboardStats, getAuditLogs, getExpenseAnalytics, getUserProductivity } from "../../services/reportService";
+import { getProjects } from "../../services/projectService";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 function AdminDashboard() {
@@ -29,16 +31,23 @@ function AdminDashboard() {
     queryFn: getAuditLogs,
   });
 
+  const currentYear = new Date().getFullYear();
   // Fetch Expense data for chart
   const { data: expenseStats = [] } = useQuery({
     queryKey: ["adminExpenseAnalytics"],
-    queryFn: () => getExpenseAnalytics({ startDate: "2026-01-01", endDate: "2026-12-31" }),
+    queryFn: () => getExpenseAnalytics({ startDate: `${currentYear}-01-01`, endDate: `${currentYear}-12-31` }),
   });
 
   // Fetch Productivity ranking for charts/tables
   const { data: productivityStats = [] } = useQuery({
     queryKey: ["adminProductivity"],
     queryFn: getUserProductivity,
+  });
+
+  // Fetch Projects for comparison chart
+  const { data: projects = [] } = useQuery({
+    queryKey: ["adminProjectsList"],
+    queryFn: () => getProjects({ limit: 10000 }),
   });
 
   const isLoading = statsLoading || auditLoading;
@@ -50,6 +59,20 @@ function AdminDashboard() {
     name: item.category,
     amount: Number(item.total_amount) || 0
   }));
+
+  // Format data for active projects (Progress vs Budget Spent)
+  const activeProjectsData = (projects || [])
+    .filter((p) => p.status === "ACTIVE" || p.status === "ON_HOLD")
+    .map((p) => {
+      const spent = parseFloat(p.budget_utilization || 0);
+      const limit = parseFloat(p.budget || 0);
+      const budgetSpentPercent = limit > 0 ? Math.min(Math.round((spent / limit) * 100), 100) : 0;
+      return {
+        name: p.project_name,
+        Progress: p.completion_percentage || 0,
+        "Budget Spent": budgetSpentPercent,
+      };
+    });
 
   const projectStatusData = [
     { name: "Active Projects", value: stats?.active_projects ?? 0, color: "#3b82f6" },
@@ -88,7 +111,7 @@ function AdminDashboard() {
             Admin Console
           </h1>
           <p className="text-[var(--text-secondary)] text-sm mt-1 font-medium">
-            Welcome back, <span className="text-blue-650 dark:text-blue-400 font-bold">{user?.fullName}</span> • Full System Visibility Authorized.
+            Welcome back, <span className="text-blue-600 font-bold">{user?.fullName}</span> • Full System Visibility Authorized.
           </p>
         </div>
         <div className="flex gap-3 text-xs bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl px-4 py-2 text-[var(--text-secondary)] items-center font-bold shadow-sm">
@@ -98,7 +121,7 @@ function AdminDashboard() {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <DashboardCard
           title="Users Fleet"
           value={stats?.total_users ?? 0}
@@ -121,11 +144,21 @@ function AdminDashboard() {
           trend={{ value: `${((stats?.completed_tasks / (stats?.total_tasks || 1)) * 100).toFixed(0)}% Done`, type: "positive" }}
         />
         <DashboardCard
-          title="Expenses Log"
-          value={`₹${stats?.total_expenses ?? 0}`}
-          icon={<FaMoneyBill />}
-          description={`Pending Reviews: ${stats?.pending_expenses ?? 0}`}
-          trend={stats?.pending_expenses > 0 ? { value: `${stats.pending_expenses} Pending`, type: "negative" } : { value: "Cleared", type: "positive" }}
+          title="Corporate Budget Pool"
+          value={`₹${parseFloat(stats?.total_budget_pool || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+          icon={<FaWallet className="text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]" />}
+          description={`Allocated to ${stats?.active_projects ?? 0} active projects`}
+          trend={{
+            value: `${stats?.total_budget_pool > 0 ? ((stats.total_expenses / stats.total_budget_pool) * 100).toFixed(0) : 0}% Utilized`,
+            type: (stats?.total_budget_pool > 0 ? ((stats.total_expenses / stats.total_budget_pool) * 100) : 0) > 85 ? "negative" : "positive"
+          }}
+        />
+        <DashboardCard
+          title="Approved Expenses"
+          value={`₹${parseFloat(stats?.total_expenses || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          icon={<FaMoneyBill className="text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]" />}
+          description={`Pending: ₹${parseFloat(stats?.pending_expenses_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} (${stats?.pending_expenses_count ?? 0} claims)`}
+          trend={stats?.pending_expenses_count > 0 ? { value: `${stats.pending_expenses_count} Pending`, type: "negative" } : { value: "All Audited", type: "positive" }}
         />
       </div>
 
@@ -138,7 +171,7 @@ function AdminDashboard() {
               <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">Expense Outflows by Category</h3>
               <p className="text-xs text-[var(--text-secondary)] font-medium">Aggregated dynamic metrics for the active fiscal cycle</p>
             </div>
-            <div className="px-3 py-1 text-xs rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 font-bold">
+            <div className="px-3 py-1 text-xs rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 font-bold">
               Live Chart
             </div>
           </div>
@@ -227,16 +260,58 @@ function AdminDashboard() {
         </motion.div>
       </div>
 
+      {/* Active Projects Performance (Progress vs Budget Spent) */}
+      <motion.div variants={itemVariants} className="glass-panel p-6 rounded-2xl">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">Active Project Performance Matrix</h3>
+            <p className="text-xs text-[var(--text-secondary)] font-medium">Comparison of physical task progress against financial budget utilization</p>
+          </div>
+          <span className="px-3 py-1 text-xs rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-bold">
+            Executive View
+          </span>
+        </div>
+        <div className="h-[300px]">
+          {activeProjectsData.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-[var(--text-secondary)] text-sm font-medium">
+              No active projects found for comparison analytics.
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300} minWidth={0}>
+              <BarChart data={activeProjectsData}>
+                <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={11} tickLine={false} />
+                <YAxis stroke="var(--text-secondary)" fontSize={11} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                <Tooltip 
+                  contentStyle={{ 
+                    background: "var(--bg-secondary)", 
+                    border: "1px solid var(--border-color)",
+                    borderRadius: "12px",
+                    color: "var(--text-primary)"
+                  }} 
+                />
+                <Bar dataKey="Progress" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={30} />
+                <Bar dataKey="Budget Spent" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={30} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </motion.div>
+
       {/* Bottom Grid: Audit Activity Logs & User Productivity Rankings */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Audit Logs */}
         <motion.div variants={itemVariants} className="glass-panel p-6 rounded-2xl">
           <div className="flex justify-between items-center mb-5">
             <div className="flex items-center gap-2.5">
-              <FaHistory className="text-blue-500 dark:text-blue-400 text-lg" />
+              <FaHistory className="text-blue-500 text-lg" />
               <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">Enterprise Audit Feed</h3>
             </div>
-            <span className="text-[10px] text-[var(--text-secondary)] tracking-widest uppercase font-bold">System Activity</span>
+            <Link 
+              to="/admin/audit-logs" 
+              className="px-3 py-1.5 text-[9px] font-extrabold uppercase bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl hover:bg-blue-600 hover:text-white transition-all cursor-pointer shadow-sm tracking-wide focus:outline-none"
+            >
+              View Full Timeline
+            </Link>
           </div>
 
           <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 scrollbar-thin">
@@ -247,7 +322,7 @@ function AdminDashboard() {
             ) : (
               auditLogs.slice(0, 10).map((log) => (
                 <div key={log.id} className="flex items-start gap-4 p-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl hover:bg-[var(--bg-hover)] transition-all">
-                  <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs">
+                  <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 text-xs">
                     <FaNetworkWired />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -271,10 +346,15 @@ function AdminDashboard() {
         <motion.div variants={itemVariants} className="glass-panel p-6 rounded-2xl">
           <div className="flex justify-between items-center mb-5">
             <div className="flex items-center gap-2.5">
-              <FaUserShield className="text-indigo-500 dark:text-indigo-400 text-lg" />
+              <FaUserShield className="text-indigo-500 text-lg" />
               <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-wide">Staff Productivity Matrix</h3>
             </div>
-            <span className="text-[10px] text-[var(--text-secondary)] tracking-widest uppercase font-bold">Performance Index</span>
+            <Link 
+              to="/admin/users" 
+              className="px-3 py-1.5 text-[9px] font-extrabold uppercase bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all cursor-pointer shadow-sm tracking-wide focus:outline-none"
+            >
+              Manage Users Fleet
+            </Link>
           </div>
 
           <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 scrollbar-thin">

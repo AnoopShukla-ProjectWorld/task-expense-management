@@ -40,9 +40,10 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Do not intercept if it is a login, refresh-token, or logout request
+    // Do not intercept if it is a login, secure-admin-login, refresh-token, or logout request
     if (
       originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/secure-admin-login") ||
       originalRequest.url?.includes("/auth/refresh-token") ||
       originalRequest.url?.includes("/auth/logout")
     ) {

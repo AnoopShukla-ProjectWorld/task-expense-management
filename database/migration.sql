@@ -237,22 +237,22 @@ GO
 
 IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('users') AND name = 'full_name')
 BEGIN
-    -- Perform splitting
-    -- First name: everything up to the first space (or the whole name if no space)
-    -- Last name: everything after the first space (or empty string if no space)
-    UPDATE users
-    SET 
-        first_name = CASE 
-            WHEN CHARINDEX(' ', TRIM(full_name)) > 0 
-            THEN SUBSTRING(TRIM(full_name), 1, CHARINDEX(' ', TRIM(full_name)) - 1)
-            ELSE TRIM(full_name)
-        END,
-        last_name = CASE 
-            WHEN CHARINDEX(' ', TRIM(full_name)) > 0 
-            THEN SUBSTRING(TRIM(full_name), CHARINDEX(' ', TRIM(full_name)) + 1, LEN(TRIM(full_name)))
-            ELSE ''
-        END
-    WHERE first_name IS NULL;
+    -- Perform splitting dynamically to avoid static compilation errors when column is missing
+    EXEC('
+        UPDATE users
+        SET 
+            first_name = CASE 
+                WHEN CHARINDEX('' '', TRIM(full_name)) > 0 
+                THEN SUBSTRING(TRIM(full_name), 1, CHARINDEX('' '', TRIM(full_name)) - 1)
+                ELSE TRIM(full_name)
+            END,
+            last_name = CASE 
+                WHEN CHARINDEX('' '', TRIM(full_name)) > 0 
+                THEN SUBSTRING(TRIM(full_name), CHARINDEX('' '', TRIM(full_name)) + 1, LEN(TRIM(full_name)))
+                ELSE ''''''
+            END
+        WHERE first_name IS NULL OR first_name = ''''
+    ');
     PRINT '✅ Populated first_name and last_name from existing full_name data.';
 END;
 GO
@@ -275,4 +275,80 @@ BEGIN
     PRINT '✅ Dropped full_name column from users.';
 END;
 GO
+
+-- 7. Add document_path to projects table
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('projects') AND name = 'document_path')
+BEGIN
+    ALTER TABLE projects ADD document_path NVARCHAR(500) NULL;
+    PRINT '✅ Added document_path column to projects table.';
+END;
+GO
+
+-- 8. Add document_path to tasks table
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('tasks') AND name = 'document_path')
+BEGIN
+    ALTER TABLE tasks ADD document_path NVARCHAR(500) NULL;
+    PRINT '✅ Added document_path column to tasks table.';
+END;
+GO
+
+-- 9. Add manager approval tracking to expenses table
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('expenses') AND name = 'manager_approval')
+BEGIN
+    ALTER TABLE expenses ADD manager_approval NVARCHAR(20) DEFAULT 'PENDING' CHECK (manager_approval IN ('PENDING', 'APPROVED', 'REJECTED'));
+    ALTER TABLE expenses ADD manager_approved_by INT NULL;
+    ALTER TABLE expenses ADD manager_reviewed_at DATETIME NULL;
+    
+    -- Add foreign key constraint
+    ALTER TABLE expenses ADD CONSTRAINT FK_Expenses_ManagerApprovedBy FOREIGN KEY (manager_approved_by) REFERENCES users(id);
+    PRINT '✅ Added manager approval tracking columns to expenses table.';
+END;
+GO
+
+-- 10. Drop check constraint on expenses.category dynamically & Add assigned_manager_id column
+DECLARE @ConstraintName NVARCHAR(200);
+SELECT @ConstraintName = name
+FROM sys.check_constraints
+WHERE parent_object_id = OBJECT_ID('expenses') AND definition LIKE '%category%';
+IF @ConstraintName IS NOT NULL
+BEGIN
+    EXEC('ALTER TABLE expenses DROP CONSTRAINT ' + @ConstraintName);
+    PRINT '✅ Dropped category check constraint dynamically.';
+END;
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('expenses') AND name = 'assigned_manager_id')
+BEGIN
+    ALTER TABLE expenses ADD assigned_manager_id INT NULL;
+    ALTER TABLE expenses ADD CONSTRAINT FK_Expenses_AssignedManager FOREIGN KEY (assigned_manager_id) REFERENCES users(id);
+    PRINT '✅ Added assigned_manager_id column to expenses table.';
+END;
+GO
+
+-- 11. Add task_id column to expenses table dynamically
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('expenses') AND name = 'task_id')
+BEGIN
+    ALTER TABLE expenses ADD task_id INT NULL;
+    ALTER TABLE expenses ADD CONSTRAINT FK_Expenses_TaskId FOREIGN KEY (task_id) REFERENCES tasks(id);
+    PRINT '✅ Added task_id column to expenses table.';
+END;
+GO
+
+-- 12. Add manual_completion_percentage to projects table
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('projects') AND name = 'manual_completion_percentage')
+BEGIN
+    ALTER TABLE projects ADD manual_completion_percentage INT NULL;
+    PRINT '✅ Added manual_completion_percentage column to projects table.';
+END;
+GO
+
+-- 13. Alter tasks table to make project_id nullable for general tasks
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('tasks') AND name = 'project_id')
+BEGIN
+    ALTER TABLE tasks ALTER COLUMN project_id INT NULL;
+    PRINT '✅ Modified project_id column in tasks to be NULLable.';
+END;
+GO
+
+
 

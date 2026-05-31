@@ -5,8 +5,8 @@ export const getAdminDashboardStats = async () => {
   return response.data.data;
 };
 
-export const getAuditLogs = async () => {
-  const response = await axiosInstance.get("/audit");
+export const getAuditLogs = async (params = {}) => {
+  const response = await axiosInstance.get("/audit", { params });
   return response.data.data;
 };
 
@@ -25,20 +25,22 @@ export const getProjectAnalytics = async () => {
   return response.data.data;
 };
 
-export const getUserProductivity = async () => {
-  const response = await axiosInstance.get("/reports/productivity");
+export const getUserProductivity = async (params = {}) => {
+  const response = await axiosInstance.get("/reports/productivity", { params });
   return response.data.data;
 };
 
-export const exportCSV = async () => {
+export const exportCSV = async (params = {}) => {
   const response = await axiosInstance.get("/reports/export/csv", {
+    params,
     responseType: "blob",
   });
   return response.data;
 };
 
-export const exportExcel = async () => {
+export const exportExcel = async (params = {}) => {
   const response = await axiosInstance.get("/reports/export/excel", {
+    params,
     responseType: "blob",
   });
   return response.data;

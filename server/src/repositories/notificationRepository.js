@@ -70,12 +70,14 @@ const createNotification =
 const getUserNotifications =
   async ({
     userId,
-    page,
-    limit,
+    page = 1,
+    limit = 10,
     isRead,
   }) => {
+    const parsedPage = Number(page) || 1;
+    const parsedLimit = Number(limit) || 10;
     const offset =
-      (page - 1) * limit;
+      (parsedPage - 1) * parsedLimit;
 
     let query = `
       SELECT *
@@ -94,7 +96,7 @@ const getUserNotifications =
     query += `
       ORDER BY created_at DESC
       OFFSET ${offset} ROWS
-      FETCH NEXT ${limit} ROWS ONLY
+      FETCH NEXT ${parsedLimit} ROWS ONLY
     `;
 
     const result =

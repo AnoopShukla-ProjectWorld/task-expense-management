@@ -1,17 +1,21 @@
 import axiosInstance from "../api/axios";
 
-export const getTasks = async () => {
-  const response = await axiosInstance.get("/tasks");
+export const getTasks = async (params = {}) => {
+  const response = await axiosInstance.get("/tasks", { params });
   return response.data.data;
 };
 
 export const createTask = async (data) => {
-  const response = await axiosInstance.post("/tasks", data);
+  const response = await axiosInstance.post("/tasks", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return response.data;
 };
 
 export const updateTask = async (id, data) => {
-  const response = await axiosInstance.put(`/tasks/${id}`, data);
+  const isFormData = data instanceof FormData;
+  const config = isFormData ? { headers: { "Content-Type": "multipart/form-data" } } : {};
+  const response = await axiosInstance.put(`/tasks/${id}`, data, config);
   return response.data;
 };
 

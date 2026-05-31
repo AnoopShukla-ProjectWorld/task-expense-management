@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaLock, FaSpinner, FaArrowLeft, FaKey } from "react-icons/fa";
+import { FaLock, FaSpinner, FaArrowLeft, FaKey, FaEye, FaEyeSlash } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { resetPasswordApi } from "../../services/authService";
 
@@ -14,6 +14,8 @@ const ResetPasswordPage = () => {
   // States
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, text: "Weak", color: "bg-red-500" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -27,7 +29,7 @@ const ResetPasswordPage = () => {
   // Strength checker
   useEffect(() => {
     if (!passwordVal) {
-      setPasswordStrength({ score: 0, text: "None", color: "bg-slate-300 dark:bg-slate-800" });
+      setPasswordStrength({ score: 0, text: "None", color: "bg-slate-300" });
       return;
     }
     let score = 0;
@@ -94,17 +96,17 @@ const ResetPasswordPage = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-md z-10"
       >
-        <div className="glass-panel bg-[var(--bg-secondary)] rounded-3xl p-8 sm:p-10 border border-slate-200 dark:border-slate-800/80 shadow-2xl relative">
+        <div className="glass-panel bg-[var(--bg-secondary)] rounded-3xl p-8 sm:p-10 border border-slate-200 shadow-2xl relative">
           
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-md shadow-blue-500/20 text-white text-2xl mb-4">
               <FaKey />
             </div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-2">
               Setup New Password
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-slate-500">
               Establish a new, strong password to restore credentials and platform authorization
             </p>
           </div>
@@ -118,16 +120,17 @@ const ResetPasswordPage = () => {
               
               {/* New Password */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   New Password
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
                     <FaLock />
                   </span>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     {...register("password", { 
                       required: "Password is required",
                       pattern: {
@@ -135,8 +138,15 @@ const ResetPasswordPage = () => {
                         message: "Must be 8+ chars with uppercase, lowercase, number, and special character (@$!%*?&)"
                       }
                     })}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:bg-white dark:focus:bg-slate-950/80 transition-all duration-200"
+                    className="w-full pl-11 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all duration-200"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer focus:outline-none"
+                  >
+                    {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+                  </button>
                 </div>
                 {errors.password && (
                   <p className="mt-2 text-xs text-red-500 font-medium">{errors.password.message}</p>
@@ -149,7 +159,7 @@ const ResetPasswordPage = () => {
                       <span className="text-slate-500 font-bold uppercase tracking-wider">Strength: {passwordStrength.text}</span>
                       <span className="text-slate-500 font-bold">{passwordStrength.score}/5</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
                       <div 
                         className={`h-full transition-all duration-300 ${passwordStrength.color}`} 
                         style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
@@ -161,22 +171,30 @@ const ResetPasswordPage = () => {
 
               {/* Confirm New Password */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   Confirm New Password
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
                     <FaLock />
                   </span>
                   <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     {...register("confirmPassword", { 
                       required: "Please confirm your password",
                       validate: (value) => value === passwordVal || "Passwords do not match"
                     })}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:bg-white dark:focus:bg-slate-950/80 transition-all duration-200"
+                    className="w-full pl-11 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all duration-200"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer focus:outline-none"
+                  >
+                    {showConfirmPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+                  </button>
                 </div>
                 {errors.confirmPassword && (
                   <p className="mt-2 text-xs text-red-500 font-medium">{errors.confirmPassword.message}</p>
@@ -207,3 +225,4 @@ const ResetPasswordPage = () => {
 };
 
 export default ResetPasswordPage;
+

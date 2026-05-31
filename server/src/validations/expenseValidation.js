@@ -19,15 +19,15 @@ const createExpenseValidation =
       ),
 
     body("category")
-      .isIn([
-        "TRAVEL",
-        "FOOD",
-        "ACCOMMODATION",
-        "OFFICE_SUPPLIES",
-        "MISCELLANEOUS",
-      ])
+      .isString()
+      .trim()
+      .notEmpty()
       .withMessage(
-        "Invalid category"
+        "Category is required"
+      )
+      .isLength({ max: 50 })
+      .withMessage(
+        "Category must be 50 characters or less"
       ),
 
     body("expense_date")

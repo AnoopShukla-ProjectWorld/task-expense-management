@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -77,29 +77,37 @@ const formatTimestamp = (dateStr) => {
 };
 
 function AuditLogsPage() {
-  const [search, setSearch] = useState("");
+  const [searchVal, setSearchVal] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [entityFilter, setEntityFilter] = useState("ALL");
   const [expandedLog, setExpandedLog] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
-  // Fetch audit logs via React Query
+  // Fetch audit logs via React Query - optimized backend filtering
   const { data: logs, isLoading } = useQuery({
-    queryKey: ["auditLogs", search],
-    queryFn: () => getAuditLogs(),
+    queryKey: ["auditLogs", searchQuery],
+    queryFn: () => getAuditLogs({ limit: 1000, search: searchQuery }),
   });
+
+  // Reset pagination to Page 1 when filters are changed
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, entityFilter]);
 
   if (isLoading) return <PageLoader />;
 
-  // Filter logs based on search and entity type dropdown selection
+  // Filter logs by entity type selection
   const filteredLogs = (logs || []).filter((log) => {
-    const matchesSearch = 
-      (log.action || "").toLowerCase().includes(search.toLowerCase()) ||
-      (log.entity_name || "").toLowerCase().includes(search.toLowerCase()) ||
-      (log.full_name || "").toLowerCase().includes(search.toLowerCase()) ||
-      (log.ip_address || "").toLowerCase().includes(search.toLowerCase());
-
-    const matchesEntity = entityFilter === "ALL" || log.entity_name === entityFilter;
-    return matchesSearch && matchesEntity;
+    return entityFilter === "ALL" || log.entity_name === entityFilter;
   });
+
+  // Pagination bounds
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  const paginatedLogs = filteredLogs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   // Extract list of unique entity names for the selector dropdown
   const uniqueEntities = ["ALL", ...new Set((logs || []).map((l) => l.entity_name).filter(Boolean))];
@@ -127,9 +135,9 @@ function AuditLogsPage() {
     try {
       const parsed = typeof val === "string" ? JSON.parse(val) : val;
       return (
-        <div className="bg-[var(--bg-primary)] p-4 rounded-xl border border-white/5 space-y-2 overflow-auto max-h-60 custom-scrollbar font-mono text-xs">
+        <div className="bg-[var(--bg-primary)] p-4 rounded-xl border border-[var(--border-color)] space-y-2 overflow-auto max-h-60 custom-scrollbar font-mono text-xs">
           {Object.entries(parsed).map(([k, v]) => (
-            <div key={k} className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-1 gap-1">
+            <div key={k} className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[var(--border-color)] pb-1 gap-1">
               <span className="text-slate-400 font-medium break-all">{k}:</span>
               <span className="text-[var(--text-primary)] font-semibold break-all text-right">
                 {v === null ? "null" : typeof v === "object" ? JSON.stringify(v) : String(v)}
@@ -140,7 +148,7 @@ function AuditLogsPage() {
       );
     } catch {
       return (
-        <pre className="bg-[var(--bg-primary)] p-4 rounded-xl border border-white/5 text-xs text-[var(--text-primary)] overflow-auto font-mono max-h-60 custom-scrollbar">
+        <pre className="bg-[var(--bg-primary)] p-4 rounded-xl border border-[var(--border-color)] text-xs text-[var(--text-primary)] overflow-auto font-mono max-h-60 custom-scrollbar">
           {String(val)}
         </pre>
       );
@@ -172,16 +180,34 @@ function AuditLogsPage() {
         variants={itemVariants}
         className="glass-panel p-5 rounded-2xl flex flex-col md:flex-row gap-4 justify-between items-center"
       >
-        <div className="relative w-full md:w-96">
-          <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
-          <input
-            type="text"
-            placeholder="Search action, user, entity, IP..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[var(--text-primary)] placeholder-slate-400 text-sm focus:outline-none focus:border-indigo-500/50 transition-all duration-300"
-          />
-        </div>
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSearchQuery(searchVal);
+          }}
+          className="flex items-center gap-2.5 w-full md:w-[420px]"
+        >
+          <div className="relative flex-1">
+            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[var(--text-secondary)] pointer-events-none">
+              <FaSearch className="text-sm" />
+            </span>
+            <input
+              type="text"
+              placeholder="Search action, user, entity, IP..."
+              value={searchVal}
+              onChange={(e) => setSearchVal(e.target.value)}
+              autoComplete="off"
+              className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-slate-400 rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/40 focus:outline-none focus:border-indigo-500/50 transition-all duration-300"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-4.5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold text-sm transition-all duration-300 shadow-md shadow-indigo-600/10 cursor-pointer active:scale-95 flex items-center gap-2"
+          >
+            <FaSearch className="text-xs" />
+            Search
+          </button>
+        </form>
 
         <div className="flex items-center gap-3 w-full md:w-auto justify-end">
           <span className="text-xs text-[var(--text-secondary)] font-bold uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap">
@@ -190,10 +216,10 @@ function AuditLogsPage() {
           <select
             value={entityFilter}
             onChange={(e) => setEntityFilter(e.target.value)}
-            className="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[var(--text-primary)] text-sm font-medium focus:outline-none focus:border-indigo-500/50 transition-all duration-300 cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm font-medium focus:outline-none focus:border-indigo-500/50 transition-all duration-300 cursor-pointer"
           >
             {uniqueEntities.map((ent) => (
-              <option key={ent} value={ent} className="bg-slate-900 text-white">
+              <option key={ent} value={ent} className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">
                 {ent}
               </option>
             ))}
@@ -212,9 +238,9 @@ function AuditLogsPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-panel p-12 text-center rounded-2xl flex flex-col items-center justify-center border border-white/5"
+              className="glass-panel p-12 text-center rounded-2xl flex flex-col items-center justify-center border border-[var(--border-color)]"
             >
-              <div className="p-4 rounded-full bg-white/5 text-slate-400 mb-4">
+              <div className="p-4 rounded-full bg-[var(--bg-tertiary)] text-slate-400 mb-4">
                 <FaHistory className="text-4xl" />
               </div>
               <h3 className="text-lg font-bold text-[var(--text-primary)]">No Audit Trails Located</h3>
@@ -223,7 +249,7 @@ function AuditLogsPage() {
               </p>
             </motion.div>
           ) : (
-            filteredLogs.map((log) => {
+            paginatedLogs.map((log) => {
               const meta = getActionMeta(log.action);
               const ActionIcon = meta.icon;
               const isExpanded = expandedLog === log.id;
@@ -244,7 +270,7 @@ function AuditLogsPage() {
                   </div>
 
                   {/* Audit Card Glass Wrapper */}
-                  <div className="glass-panel hover:bg-white/[0.04] p-5 rounded-2xl border border-white/5 transition-all duration-300 shadow-md">
+                  <div className="glass-panel hover:bg-[var(--bg-hover)] p-5 rounded-2xl border border-[var(--border-color)] transition-all duration-300 shadow-md">
                     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                       {/* Left: Text Descriptor */}
                       <div className="space-y-1.5">
@@ -282,7 +308,7 @@ function AuditLogsPage() {
                       {(log.old_values || log.new_values) && (
                         <button
                           onClick={() => handleToggleExpand(log.id)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-[var(--text-primary)] transition-all duration-200 cursor-pointer active:scale-95 whitespace-nowrap self-end lg:self-center"
+                          className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[var(--bg-hover)] border border-[var(--border-color)] text-xs font-semibold text-[var(--text-primary)] transition-all duration-200 cursor-pointer active:scale-95 whitespace-nowrap self-end lg:self-center"
                         >
                           {isExpanded ? (
                             <>
@@ -305,7 +331,7 @@ function AuditLogsPage() {
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ type: "spring", stiffness: 120, damping: 15 }}
-                          className="overflow-hidden mt-4 pt-4 border-t border-white/5"
+                          className="overflow-hidden mt-4 pt-4 border-t border-[var(--border-color)]"
                         >
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Old State Values */}
@@ -333,6 +359,29 @@ function AuditLogsPage() {
             })
           )}
         </AnimatePresence>
+
+        {/* Premium Timeline Pagination Panel */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-3 pt-6">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className="px-4 py-2 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] border border-[var(--border-color)] text-xs font-bold disabled:opacity-40 cursor-pointer active:scale-95 transition-all shadow-sm"
+            >
+              Prev
+            </button>
+            <span className="text-xs font-semibold text-[var(--text-secondary)]">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              className="px-4 py-2 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] border border-[var(--border-color)] text-xs font-bold disabled:opacity-40 cursor-pointer active:scale-95 transition-all shadow-sm"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );

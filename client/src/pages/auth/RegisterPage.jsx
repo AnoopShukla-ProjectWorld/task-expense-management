@@ -32,10 +32,9 @@ import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const canvasRef = useRef(null);
 
   // States
-  const [captchaText, setCaptchaText] = useState("");
+  const [captchaImage, setCaptchaImage] = useState("");
   const [captchaHash, setCaptchaHash] = useState("");
   const [isCaptchaLoading, setIsCaptchaLoading] = useState(false);
   const [captchaVerified, setCaptchaVerified] = useState(false);
@@ -165,7 +164,7 @@ const RegisterPage = () => {
     try {
       const response = await getCaptchaApi();
       if (response.success) {
-        setCaptchaText(response.data.text);
+        setCaptchaImage(response.data.image);
         setCaptchaHash(response.data.hash);
       }
     } catch (err) {
@@ -178,58 +177,6 @@ const RegisterPage = () => {
   useEffect(() => {
     fetchCaptcha();
   }, []);
-
-  // Draw CAPTCHA text on canvas
-  useEffect(() => {
-    if (canvasRef.current && captchaText) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw background noise
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      gradient.addColorStop(0, "#f8fafc");
-      gradient.addColorStop(1, "#cbd5e1");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Distortions: draw random noise lines
-      ctx.strokeStyle = "#94a3b8";
-      ctx.lineWidth = 1.5;
-      for (let i = 0; i < 4; i++) {
-        ctx.beginPath();
-        ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
-        ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
-        ctx.stroke();
-      }
-
-      // Draw captcha text with unique distortions
-      ctx.font = "bold 26px 'Outfit', sans-serif";
-      ctx.textBaseline = "middle";
-      const charWidth = canvas.width / 6;
-
-      for (let i = 0; i < captchaText.length; i++) {
-        ctx.fillStyle = ["#1e293b", "#2563eb", "#4f46e5", "#0d9488", "#b91c1c"][Math.floor(Math.random() * 5)];
-        ctx.save();
-        // Skew & rotate
-        const x = i * charWidth + charWidth / 2;
-        const y = canvas.height / 2 + (Math.random() * 8 - 4);
-        const angle = (Math.random() * 40 - 20) * Math.PI / 180;
-        ctx.translate(x, y);
-        ctx.rotate(angle);
-        ctx.fillText(captchaText[i], -10, 10);
-        ctx.restore();
-      }
-
-      // Add random dots
-      for (let i = 0; i < 30; i++) {
-        ctx.fillStyle = "#64748b";
-        ctx.beginPath();
-        ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1.5, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-    }
-  }, [captchaText]);
 
   const validateIndianMobile = (number) => {
     if (!/^[6-9]\d{9}$/.test(number)) return false;
@@ -1094,12 +1041,15 @@ const RegisterPage = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 items-center">
-                <canvas 
-                  ref={canvasRef} 
-                  width={200} 
-                  height={60} 
-                  className="rounded-xl border border-slate-200 shadow-sm bg-slate-100 flex-shrink-0"
-                />
+                {captchaImage ? (
+                  <img 
+                    src={captchaImage} 
+                    alt="CAPTCHA Challenge" 
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm bg-slate-100 dark:bg-slate-900 flex-shrink-0 h-[60px] w-[200px]" 
+                  />
+                ) : (
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm bg-slate-100 dark:bg-slate-900 flex-shrink-0 h-[60px] w-[200px] animate-pulse bg-slate-200" />
+                )}
                 <div className="flex w-full gap-3">
                   <input
                     type="text"

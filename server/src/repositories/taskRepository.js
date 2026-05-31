@@ -16,6 +16,7 @@ const createTask = async ({
   start_date,
   due_date,
   priority,
+  document_path,
 }) => {
   const result = await pool
     .request()
@@ -59,6 +60,11 @@ const createTask = async ({
       sql.NVarChar(20),
       priority
     )
+    .input(
+      "document_path",
+      sql.NVarChar(500),
+      document_path || null
+    )
     .query(`
       INSERT INTO tasks
       (
@@ -69,7 +75,8 @@ const createTask = async ({
         description,
         start_date,
         due_date,
-        priority
+        priority,
+        document_path
       )
 
       OUTPUT INSERTED.*
@@ -83,7 +90,8 @@ const createTask = async ({
         @description,
         @start_date,
         @due_date,
-        @priority
+        @priority,
+        @document_path
       )
     `);
 
@@ -106,10 +114,17 @@ const findTaskById = async (
       taskId
     )
     .query(`
-      SELECT *
-      FROM tasks
-      WHERE id = @taskId
-      AND is_deleted = 0
+      SELECT 
+        t.*,
+        CONCAT(u.first_name, ' ', u.last_name) AS assigned_to_name,
+        CONCAT(ub.first_name, ' ', ub.last_name) AS assigned_by_name,
+        p.project_name
+      FROM tasks t
+      INNER JOIN users u ON t.assigned_to = u.id
+      LEFT JOIN users ub ON t.assigned_by = ub.id
+      LEFT JOIN projects p ON t.project_id = p.id
+      WHERE t.id = @taskId
+      AND t.is_deleted = 0
     `);
 
   return result.recordset[0];
@@ -135,13 +150,17 @@ const getTasks = async ({
     SELECT
       t.*,
       CONCAT(u.first_name, ' ', u.last_name) AS assigned_to_name,
+      CONCAT(ub.first_name, ' ', ub.last_name) AS assigned_by_name,
       p.project_name
     FROM tasks t
 
     INNER JOIN users u
       ON t.assigned_to = u.id
 
-    INNER JOIN projects p
+    LEFT JOIN users ub
+      ON t.assigned_by = ub.id
+
+    LEFT JOIN projects p
       ON t.project_id = p.id
 
     WHERE t.is_deleted = 0
@@ -149,7 +168,7 @@ const getTasks = async ({
 
   if (userRole === "MANAGER") {
     query += `
-      AND p.assigned_manager_id = @userId
+      AND (p.assigned_manager_id = @userId OR t.assigned_to = @userId)
     `;
   } else if (userRole === "EMPLOYEE") {
     query += `
@@ -240,11 +259,26 @@ const updateTask = async (
   );
 
   const fields = [];
+  const allowedColumns = [
+    "project_id",
+    "assigned_to",
+    "assigned_by",
+    "title",
+    "description",
+    "start_date",
+    "due_date",
+    "status",
+    "priority",
+    "completion_percentage",
+    "document_path",
+  ];
 
   Object.entries(updateData).forEach(
     ([key, value]) => {
-      fields.push(`${key} = @${key}`);
-      request.input(key, value);
+      if (allowedColumns.includes(key) && value !== undefined) {
+        fields.push(`${key} = @${key}`);
+        request.input(key, value);
+      }
     }
   );
 

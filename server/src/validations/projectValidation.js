@@ -19,7 +19,17 @@ const createProjectValidation = [
     .notEmpty()
     .withMessage("Start date is required")
     .isISO8601()
-    .withMessage("Invalid start date"),
+    .withMessage("Invalid start date")
+    .custom((value) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const inputDate = new Date(value);
+      inputDate.setHours(0, 0, 0, 0);
+      if (inputDate < today) {
+        throw new Error("Start date cannot be in the past");
+      }
+      return true;
+    }),
 
   body("end_date")
     .optional()

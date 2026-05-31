@@ -6,6 +6,11 @@ export const getNotifications = async () => {
 };
 
 export const markAsRead = async (id) => {
-  const response = await axiosInstance.put(`/notifications/${id}/read`);
+  const response = await axiosInstance.patch(`/notifications/${id}/read`);
+  return response.data;
+};
+
+export const deleteNotification = async (id) => {
+  const response = await axiosInstance.delete(`/notifications/${id}`);
   return response.data;
 };

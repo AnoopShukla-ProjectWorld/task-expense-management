@@ -1,29 +1,24 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes, FaUser, FaEnvelope, FaIdCard, FaPhone, FaLock, FaUserTag } from "react-icons/fa";
-
+import { FaTimes, FaUser, FaEnvelope, FaIdCard, FaPhone, FaLock, FaUserTag, FaEye, FaEyeSlash } from "react-icons/fa";
 function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm();
+  const [showPassword, setShowPassword] = useState(false);
 
   const parsePhone = (phoneStr) => {
-    if (!phoneStr) return { countryCode: "+91", localNumber: "" };
-    if (phoneStr.startsWith("+91")) return { countryCode: "+91", localNumber: phoneStr.slice(3) };
-    if (phoneStr.startsWith("+1")) return { countryCode: "+1", localNumber: phoneStr.slice(2) };
-    if (phoneStr.startsWith("+44")) return { countryCode: "+44", localNumber: phoneStr.slice(3) };
-    if (phoneStr.startsWith("+971")) return { countryCode: "+971", localNumber: phoneStr.slice(4) };
-    return { countryCode: "+91", localNumber: phoneStr };
+    if (!phoneStr) return "";
+    if (phoneStr.startsWith("+91")) return phoneStr.slice(3);
+    return phoneStr;
   };
 
   useEffect(() => {
     if (initialData) {
-      const parsed = parsePhone(initialData.mobile_number);
       reset({
         full_name: initialData.full_name,
         email: initialData.email,
         employee_id: initialData.employee_id,
-        phone_country: parsed.countryCode,
-        phone_local: parsed.localNumber,
+        phone_local: parsePhone(initialData.mobile_number),
         role: initialData.role,
       });
     } else {
@@ -31,7 +26,6 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
         full_name: "",
         email: "",
         employee_id: "Auto-Generated",
-        phone_country: "+91",
         phone_local: "",
         password: "",
         role: "",
@@ -42,8 +36,8 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
   if (!isOpen) return null;
 
   const handleFormSubmit = (data) => {
-    const { phone_country, phone_local, ...rest } = data;
-    const combinedPhone = phone_local ? `${phone_country}${phone_local}` : "";
+    const { phone_local, ...rest } = data;
+    const combinedPhone = phone_local ? `+91${phone_local}` : "";
     const payload = {
       ...rest,
       phone_number: combinedPhone,
@@ -104,7 +98,8 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                 </span>
                 <input
                   type="text"
-                  placeholder="John Doe"
+                  placeholder="Anoop Shukla"
+                  autoComplete="off"
                   {...register("full_name", {
                     required: "Full name is required",
                     pattern: {
@@ -128,7 +123,8 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                 </span>
                 <input
                   type="email"
-                  placeholder="johndoe@enterprise.com"
+                  placeholder="anoopshukla@enterprise.com"
+                  autoComplete="off"
                   {...register("email", {
                     required: "Email is required",
                     pattern: {
@@ -144,73 +140,44 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex flex-col gap-1 sm:w-[150px] sm:shrink-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Employee ID</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[var(--text-secondary)]">
-                    <FaIdCard className="text-xs" />
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)]">
+                    <FaIdCard className="text-sm" />
                   </span>
                   <input
                     type="text"
                     readOnly
                     {...register("employee_id")}
-                    className="w-full pl-9 pr-3 py-3 bg-slate-100/50 dark:bg-slate-900/30 border border-[var(--border-color)] rounded-2xl text-xs text-slate-500 dark:text-slate-400 cursor-not-allowed outline-none font-mono font-bold animate-pulse-slow text-center"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-100/50 border border-[var(--border-color)] rounded-2xl text-sm text-slate-500 cursor-not-allowed outline-none font-mono font-bold text-center"
                   />
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1 flex-grow">
+              <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Phone Number</label>
-                <div className="flex gap-2">
-                  <div className="relative w-[90px] shrink-0">
-                    <select
-                      {...register("phone_country")}
-                      className="w-full pl-2 pr-6 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-xs font-bold text-[var(--text-primary)] outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 cursor-pointer appearance-none"
-                    >
-                      <option value="+91" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">🇮🇳 +91</option>
-                      <option value="+1" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">🇺🇸 +1</option>
-                      <option value="+44" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">🇬🇧 +44</option>
-                      <option value="+971" className="bg-[var(--bg-secondary)] text-[var(--text-primary)]">🇦🇪 +971</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-[var(--text-secondary)]">
-                      <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
-                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div className="relative flex-grow group">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors">
-                      <FaPhone className="text-xs" />
-                    </span>
-                    <input
-                      type="text"
-                      placeholder="9999999999"
-                      {...register("phone_local", {
-                        validate: (val) => {
-                          if (!val) return true; // Optional field
-                          if (/[^0-9]/.test(val)) return "Phone number must contain only digits";
-                          
-                          const country = watch("phone_country");
-                          if (country === "+91") {
-                            return /^[6-9]\d{9}$/.test(val) || "India number must be 10 digits starting 6-9";
-                          }
-                          if (country === "+1") {
-                            return /^\d{10}$/.test(val) || "USA/Canada number must be 10 digits";
-                          }
-                          if (country === "+44") {
-                            return /^7\d{9}$/.test(val) || "UK number must be 10 digits starting with 7";
-                          }
-                          if (country === "+971") {
-                            return /^5\d{8}$/.test(val) || "UAE number must be 9 digits starting with 5";
-                          }
-                          return true;
-                        }
-                      })}
-                      className={`w-full pl-9 pr-3 py-3 bg-[var(--bg-tertiary)] border ${errors.phone_local ? "border-rose-500/50" : "border-[var(--border-color)]"} rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all`}
-                    />
-                  </div>
+                <div className="relative group">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors">
+                    <FaPhone className="text-sm" />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="9999999999"
+                    autoComplete="off"
+                    {...register("phone_local", {
+                      validate: (val) => {
+                        if (!val) return true; // Optional field
+                        if (/[^0-9]/.test(val)) return "Phone number must contain only digits";
+                        if (!/^[6-9]\d{9}$/.test(val)) return "India number must be 10 digits starting 6-9";
+                        if (/^(\d)\1{9}$/.test(val)) return "Mobile number cannot contain all identical digits";
+                        if (val === "1234567890") return "Sequential numbers are not allowed";
+                        return true;
+                      }
+                    })}
+                    className={`w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border ${errors.phone_local ? "border-rose-500/50" : "border-[var(--border-color)]"} rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all`}
+                  />
                 </div>
                 {errors.phone_local && (
                   <p className="text-[11px] text-rose-400 font-semibold">{errors.phone_local.message}</p>
@@ -222,18 +189,26 @@ function UserModal({ isOpen, onClose, onSubmit, loading, initialData }) {
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">Secure Password *</label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-[var(--text-secondary)] group-focus-within:text-blue-400 transition-colors pointer-events-none">
                     <FaLock className="text-sm" />
                   </span>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     {...register("password", {
                       required: "Password is required",
                       minLength: { value: 8, message: "Password must be at least 8 characters" },
                     })}
-                    className={`w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border ${errors.password ? "border-rose-500/50" : "border-[var(--border-color)]"} rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all`}
+                    className={`w-full pl-11 pr-12 py-3 bg-[var(--bg-tertiary)] border ${errors.password ? "border-rose-500/50" : "border-[var(--border-color)]"} rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all`}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer focus:outline-none"
+                  >
+                    {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+                  </button>
                 </div>
                 {errors.password && (
                   <p className="text-[11px] text-rose-400 font-semibold">{errors.password.message}</p>

@@ -17,6 +17,7 @@ import {
   FaInfoCircle
 } from "react-icons/fa";
 import { getUsers, approveUser, rejectUser, suspendUser } from "../../services/userService";
+import TableSearch from "../../components/tables/TableSearch";
 
 const UserApprovalPage = () => {
   const queryClient = useQueryClient();
@@ -167,18 +168,11 @@ const UserApprovalPage = () => {
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl shadow-sm">
         
         {/* Search */}
-        <div className="relative w-full md:w-80">
-          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[var(--text-secondary)]">
-            <FaSearch className="text-sm" />
-          </span>
-          <input
-            type="text"
-            placeholder="Search by name, email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-slate-350 dark:hover:border-slate-700 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors"
-          />
-        </div>
+        <TableSearch
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name, email..."
+        />
 
         {/* Filter Tabs */}
         <div className="flex flex-wrap gap-2 w-full md:w-auto">
@@ -193,7 +187,7 @@ const UserApprovalPage = () => {
               onClick={() => setStatusFilter(tab.value)}
               className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all cursor-pointer ${
                 statusFilter === tab.value
-                  ? "bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400 font-bold"
+                  ? "bg-blue-500/10 border-blue-500/30 text-blue-600 font-bold"
                   : "bg-transparent border-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
               }`}
             >
@@ -212,7 +206,7 @@ const UserApprovalPage = () => {
           </div>
         ) : !users || users.length === 0 ? (
           <div className="py-20 text-center text-[var(--text-secondary)] space-y-2">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 mb-2">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 text-slate-400 mb-2">
               <FaInfoCircle className="text-xl" />
             </div>
             <h4 className="text-sm font-bold uppercase tracking-wider text-[var(--text-primary)]">No registration records found</h4>
@@ -337,10 +331,10 @@ const UserApprovalPage = () => {
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedUser(null)}
-              className="absolute inset-0 bg-black"
+              className="absolute inset-0 bg-slate-950/60 backdrop-blur-md cursor-pointer"
             />
 
             {/* Modal Box */}
@@ -364,7 +358,7 @@ const UserApprovalPage = () => {
                   onClick={() => setAssignedRole("employee")}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 ${
                     assignedRole === "employee" 
-                      ? "bg-blue-500/10 border-blue-500/40 text-blue-600 dark:text-blue-400" 
+                      ? "bg-blue-500/10 border-blue-500/40 text-blue-600" 
                       : "bg-[var(--bg-tertiary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
                   }`}
                 >
@@ -382,7 +376,7 @@ const UserApprovalPage = () => {
                   onClick={() => setAssignedRole("manager")}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 ${
                     assignedRole === "manager" 
-                      ? "bg-violet-500/10 border-violet-500/40 text-violet-600 dark:text-violet-400" 
+                      ? "bg-violet-500/10 border-violet-500/40 text-violet-600" 
                       : "bg-[var(--bg-tertiary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
                   }`}
                 >
@@ -432,3 +426,5 @@ const UserApprovalPage = () => {
 };
 
 export default UserApprovalPage;
+
+

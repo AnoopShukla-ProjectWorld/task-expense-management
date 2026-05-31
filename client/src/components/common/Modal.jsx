@@ -1,4 +1,4 @@
-function Modal({
+﻿function Modal({
   isOpen,
   onClose,
   children,
@@ -9,7 +9,7 @@ function Modal({
     <div
       className="
         fixed inset-0 z-50
-        bg-black/60 backdrop-blur-sm
+        bg-slate-800/50 backdrop-blur-sm
         flex justify-center items-center p-4
       "
     >

@@ -14,6 +14,7 @@ const createProject = async ({
   end_date,
   assigned_manager_id,
   priority,
+  document_path,
 }) => {
   const result = await pool
     .request()
@@ -47,6 +48,11 @@ const createProject = async ({
       sql.NVarChar(20),
       priority
     )
+    .input(
+      "document_path",
+      sql.NVarChar(500),
+      document_path || null
+    )
     .query(`
       INSERT INTO projects
       (
@@ -55,11 +61,12 @@ const createProject = async ({
         start_date,
         end_date,
         assigned_manager_id,
-        priority
+        priority,
+        document_path
       )
-
+ 
       OUTPUT INSERTED.*
-
+ 
       VALUES
       (
         @project_name,
@@ -67,7 +74,8 @@ const createProject = async ({
         @start_date,
         @end_date,
         @assigned_manager_id,
-        @priority
+        @priority,
+        @document_path
       )
     `);
 
@@ -90,10 +98,24 @@ const findProjectById = async (
       projectId
     )
     .query(`
-      SELECT *
-      FROM projects
-      WHERE id = @projectId
-      AND is_deleted = 0
+      SELECT 
+        p.id, p.project_name, p.description, p.start_date, p.end_date, p.status, p.priority, p.assigned_manager_id, p.budget, p.document_path, p.created_at, p.updated_at, p.manual_completion_percentage,
+        COALESCE(
+          p.manual_completion_percentage, 
+          (
+              SELECT COALESCE(AVG(CAST(t.completion_percentage AS FLOAT)), 0)
+              FROM tasks t
+              WHERE t.project_id = p.id AND t.is_deleted = 0
+          )
+        ) AS completion_percentage,
+        (
+            SELECT COALESCE(SUM(e.amount), 0)
+            FROM expenses e
+            WHERE e.project_id = p.id AND e.status = 'APPROVED' AND e.is_deleted = 0
+        ) AS budget_utilization
+      FROM projects p
+      WHERE p.id = @projectId
+      AND p.is_deleted = 0
     `);
 
   return result.recordset[0];
@@ -116,8 +138,21 @@ const getProjects = async ({
 
   let query = `
     SELECT
-      p.*,
-      CONCAT(u.first_name, ' ', u.last_name) AS manager_name
+      p.id, p.project_name, p.description, p.start_date, p.end_date, p.status, p.priority, p.assigned_manager_id, p.budget, p.document_path, p.created_at, p.updated_at, p.manual_completion_percentage,
+      CONCAT(u.first_name, ' ', u.last_name) AS manager_name,
+      COALESCE(
+        p.manual_completion_percentage, 
+        (
+            SELECT COALESCE(AVG(CAST(t.completion_percentage AS FLOAT)), 0)
+            FROM tasks t
+            WHERE t.project_id = p.id AND t.is_deleted = 0
+        )
+      ) AS completion_percentage,
+      (
+          SELECT COALESCE(SUM(e.amount), 0)
+          FROM expenses e
+          WHERE e.project_id = p.id AND e.status = 'APPROVED' AND e.is_deleted = 0
+      ) AS budget_utilization
     FROM projects p
 
     INNER JOIN users u
@@ -217,10 +252,26 @@ const updateProject = async (
     projectId
   );
 
+  const allowedColumns = [
+    "project_name",
+    "description",
+    "start_date",
+    "end_date",
+    "status",
+    "priority",
+    "assigned_manager_id",
+    "budget",
+    "completion_percentage",
+    "manual_completion_percentage",
+    "document_path",
+  ];
+
   Object.entries(updateData).forEach(
     ([key, value]) => {
-      fields.push(`${key} = @${key}`);
-      request.input(key, value);
+      if (allowedColumns.includes(key) && value !== undefined) {
+        fields.push(`${key} = @${key}`);
+        request.input(key, value);
+      }
     }
   );
 
@@ -234,8 +285,25 @@ const updateProject = async (
 
     WHERE id = @projectId
 
-    SELECT * FROM projects
-    WHERE id = @projectId
+    SELECT
+      p.id, p.project_name, p.description, p.start_date, p.end_date, p.status, p.priority, p.assigned_manager_id, p.budget, p.document_path, p.created_at, p.updated_at, p.manual_completion_percentage,
+      CONCAT(u.first_name, ' ', u.last_name) AS manager_name,
+      COALESCE(
+        p.manual_completion_percentage, 
+        (
+            SELECT COALESCE(AVG(CAST(t.completion_percentage AS FLOAT)), 0)
+            FROM tasks t
+            WHERE t.project_id = p.id AND t.is_deleted = 0
+        )
+      ) AS completion_percentage,
+      (
+          SELECT COALESCE(SUM(e.amount), 0)
+          FROM expenses e
+          WHERE e.project_id = p.id AND e.status = 'APPROVED' AND e.is_deleted = 0
+      ) AS budget_utilization
+    FROM projects p
+    LEFT JOIN users u ON p.assigned_manager_id = u.id
+    WHERE p.id = @projectId
   `;
 
   const result =

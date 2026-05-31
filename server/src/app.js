@@ -63,6 +63,10 @@ const reportRoutes = require(
   "./routes/reportRoutes"
 );
 
+const aiRoutes = require(
+  "./routes/aiRoutes"
+);
+
 const errorMiddleware = require(
   "./middlewares/errorMiddleware"
 );
@@ -93,7 +97,11 @@ const app = express();
 // SECURITY & PERFORMANCE MIDDLEWARES
 // ============================================
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 
 app.use(compression());
 
@@ -218,6 +226,11 @@ app.use(
 app.use(
   "/api/v1/reports",
   reportRoutes
+);
+
+app.use(
+  "/api/v1/ai",
+  aiRoutes
 );
 
 

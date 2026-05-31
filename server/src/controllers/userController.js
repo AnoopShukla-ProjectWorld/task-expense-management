@@ -267,6 +267,10 @@ const getProfile =
           req.user.id
         );
 
+      if (user) {
+        user.phone_number = user.mobile_number;
+      }
+
       return successResponse(
         res,
         200,
@@ -285,12 +289,20 @@ const updateProfile =
   asyncHandler(
     async (req, res) => {
       const { first_name, last_name, phone_number } = req.body;
+      const updateData = { first_name, last_name, mobile_number: phone_number };
+      if (req.file) {
+        updateData.profile_image = `/uploads/profiles/${req.file.filename}`;
+      }
       const user =
         await updateProfileService(
           req.user.id,
-          { first_name, last_name, phone_number },
+          updateData,
           req.ip
         );
+
+      if (user) {
+        user.phone_number = user.mobile_number;
+      }
 
       // AUDIT LOG
       await logActivity({

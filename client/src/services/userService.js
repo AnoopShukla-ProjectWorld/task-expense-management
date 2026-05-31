@@ -32,7 +32,11 @@ export const getProfile = async () => {
 };
 
 export const updateProfile = async (data) => {
-  const response = await axiosInstance.put("/users/profile/me", data);
+  const response = await axiosInstance.put("/users/profile/me", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data.data;
 };
 

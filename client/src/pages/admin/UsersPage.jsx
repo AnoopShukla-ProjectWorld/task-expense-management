@@ -17,7 +17,7 @@ function UsersPage() {
 
   const { data: users, isLoading } = useQuery({
     queryKey: ["users", search],
-    queryFn: () => getUsers({ search }),
+    queryFn: () => getUsers({ search, limit: 10000 }),
   });
 
   const createMutation = useMutation({
@@ -74,7 +74,7 @@ function UsersPage() {
       key: "role",
       title: "Role",
       render: (row) => (
-        <span className={`px-2.5 py-1 rounded-xl text-xs font-bold tracking-wide uppercase border ${
+        <span className={`inline-flex justify-center items-center w-24 px-2.5 py-1 rounded-xl text-xs font-bold tracking-wide uppercase border text-center shadow-sm ${
           row.role === "admin"
             ? "bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.05)]"
             : row.role === "manager"
@@ -89,7 +89,7 @@ function UsersPage() {
       key: "status",
       title: "Status",
       render: (row) => (
-        <span className={`px-2.5 py-1 rounded-xl text-xs font-bold tracking-wide uppercase border ${
+        <span className={`inline-flex justify-center items-center w-24 px-2.5 py-1 rounded-xl text-xs font-bold tracking-wide uppercase border text-center shadow-sm ${
           row.status === "approved" || row.status === "ACTIVE" || !row.status
             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]"
             : row.status === "pending"
@@ -100,11 +100,47 @@ function UsersPage() {
         </span>
       ),
     },
+    {
+      key: "actions",
+      title: "Actions",
+      render: (row) => {
+        const isAdmin = row.role?.toLowerCase() === "admin";
+        return (
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setEditingUser(row);
+                setIsModalOpen(true);
+              }}
+              disabled={isAdmin}
+              className={`px-3 py-1.5 border rounded-xl text-xs font-bold transition-all shadow-sm ${
+                isAdmin
+                  ? "bg-slate-100/5 border-slate-200/5 text-slate-500 cursor-not-allowed opacity-40"
+                  : "bg-blue-600/10 border-blue-500/30 hover:bg-blue-600 text-blue-600 hover:text-white cursor-pointer"
+              }`}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => setDeleteId(row.id)}
+              disabled={isAdmin}
+              className={`px-3 py-1.5 border rounded-xl text-xs font-bold transition-all shadow-sm ${
+                isAdmin
+                  ? "bg-slate-100/5 border-slate-200/5 text-slate-500 cursor-not-allowed opacity-40"
+                  : "bg-rose-600/10 border-rose-500/30 hover:bg-rose-600 text-rose-600 hover:text-white cursor-pointer"
+              }`}
+            >
+              Delete
+            </button>
+          </div>
+        );
+      },
+    },
   ];
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Users Management</h1>
           <p className="text-[var(--text-secondary)] text-sm mt-1">Manage and provision team profiles and permissions</p>
@@ -123,9 +159,7 @@ function UsersPage() {
         columns={columns}
         data={users || []}
         loading={isLoading}
-        actions={true}
-        onEdit={(row) => { setEditingUser(row); setIsModalOpen(true); }}
-        onDelete={(id) => setDeleteId(id)}
+        actions={false}
       />
 
       <UserModal

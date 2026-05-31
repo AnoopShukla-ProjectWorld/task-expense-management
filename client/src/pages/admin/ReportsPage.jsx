@@ -21,6 +21,7 @@ import {
   exportExcel 
 } from "../../services/reportService";
 import PageLoader from "../../components/loaders/PageLoader";
+import TableSearch from "../../components/tables/TableSearch";
 
 const COLORS = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#ec4899"];
 
@@ -51,8 +52,8 @@ function ReportsPage() {
   });
 
   const { data: productivityData = [], isLoading: productivityLoading } = useQuery({
-    queryKey: ["userProductivity"],
-    queryFn: getUserProductivity,
+    queryKey: ["userProductivity", startDate, endDate],
+    queryFn: () => getUserProductivity({ startDate, endDate }),
   });
 
   const isLoading = statsLoading || tasksLoading || expensesLoading || productivityLoading;
@@ -82,7 +83,7 @@ function ReportsPage() {
   const handleExportCSV = async () => {
     try {
       setExportLoading(true);
-      const blob = await exportCSV();
+      const blob = await exportCSV({ startDate, endDate });
       const url = window.URL.createObjectURL(new Blob([blob]));
       const link = document.createElement("a");
       link.href = url;
@@ -101,7 +102,7 @@ function ReportsPage() {
   const handleExportExcel = async () => {
     try {
       setExportLoading(true);
-      const blob = await exportExcel();
+      const blob = await exportExcel({ startDate, endDate });
       const url = window.URL.createObjectURL(new Blob([blob]));
       const link = document.createElement("a");
       link.href = url;
@@ -166,8 +167,8 @@ function ReportsPage() {
         <div style="display: grid; grid-template-cols: 1fr 1fr; gap: 20px; margin-bottom: 40px;">
           <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px;">
             <p style="margin: 0; font-size: 11px; text-transform: uppercase; font-weight: bold; color: #64748b;">Total Tracked Outflow</p>
-            <p style="margin: 8px 0 0 0; font-size: 22px; font-weight: bold; color: #0f172a;">₹${stats?.total_expenses ?? 0}</p>
-            <p style="margin: 4px 0 0 0; font-size: 11px; color: #ef4444;">Pending: ₹${stats?.pending_expenses ?? 0}</p>
+            <p style="margin: 8px 0 0 0; font-size: 22px; font-weight: bold; color: #0f172a;">₹${rangeTotalExpenses.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+            <p style="margin: 4px 0 0 0; font-size: 11px; color: #ef4444;">Pending: ₹${(stats?.pending_expenses_amount ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} (${stats?.pending_expenses_count ?? 0} claims)</p>
           </div>
           <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px;">
             <p style="margin: 0; font-size: 11px; text-transform: uppercase; font-weight: bold; color: #64748b;">Active Projects Fleet</p>
@@ -231,12 +232,13 @@ function ReportsPage() {
       };
 
       // 1. Analyze expense thresholds and budgets
-      const pendingExpensesTotal = stats?.pending_expenses || 0;
-      if (pendingExpensesTotal > 20000) {
+      const pendingExpensesAmount = stats?.pending_expenses_amount || 0;
+      const pendingExpensesCount = stats?.pending_expenses_count || 0;
+      if (pendingExpensesAmount > 20000) {
         anomalies.push({
           type: "WARNING",
-          title: "High Pending Claims Backlog",
-          desc: `There is a backlog of ₹${pendingExpensesTotal} in pending expense approvals. This could impact cashflow estimates and project budget reconciliation.`
+          title: "High Pending Claims Financial Exposure",
+          desc: `There is an active backlog of ${pendingExpensesCount} pending claims totaling ₹${pendingExpensesAmount.toLocaleString()} awaiting approval. This could impact cashflow estimates and project budget reconciliation.`
         });
       }
 
@@ -288,6 +290,14 @@ function ReportsPage() {
   const filteredProductivity = productivityData.filter(user => 
     user.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Dynamic Range Calculations
+  const rangeTotalExpenses = expenseData.reduce((sum, item) => sum + (Number(item.total_amount) || 0), 0);
+  const rangeTotalTasks = taskData.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
+  const rangeCompletedTasks = Number(taskData.find(item => item.status === "COMPLETED")?.total) || 0;
+  const rangeCompletionRate = rangeTotalTasks > 0 ? Math.round((rangeCompletedTasks / rangeTotalTasks) * 100) : 0;
+  const rangeActiveStaff = productivityData.filter(user => user.total_tasks > 0).length;
+  const rangeTotalStaff = productivityData.length;
 
   // Map Task Pie Chart
   const taskChartData = taskData.map(item => ({
@@ -357,7 +367,7 @@ function ReportsPage() {
           <button
             disabled={exportLoading}
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-[var(--text-primary)] font-medium text-sm transition-all duration-300 shadow-lg cursor-pointer active:scale-95 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[var(--bg-hover)] border border-[var(--border-color)] text-[var(--text-primary)] font-medium text-sm transition-all duration-300 shadow-lg cursor-pointer active:scale-95 disabled:opacity-50"
           >
             <FaFileCsv className="text-blue-400 text-lg" />
             Export CSV
@@ -388,7 +398,7 @@ function ReportsPage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-200 cursor-pointer ${
                 startDate === "2026-04-22" && endDate === "2026-05-22"
                   ? "bg-blue-600/20 text-blue-400 border-blue-500/30"
-                  : "bg-white/5 text-[var(--text-secondary)] border-white/5 hover:bg-white/10"
+                  : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border-[var(--border-color)] hover:bg-[var(--bg-hover)]"
               }`}
             >
               Last 30 Days
@@ -398,7 +408,7 @@ function ReportsPage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-200 cursor-pointer ${
                 startDate === "2026-05-01" && endDate === "2026-05-31"
                   ? "bg-blue-600/20 text-blue-400 border-blue-500/30"
-                  : "bg-white/5 text-[var(--text-secondary)] border-white/5 hover:bg-white/10"
+                  : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border-[var(--border-color)] hover:bg-[var(--bg-hover)]"
               }`}
             >
               This Month
@@ -408,7 +418,7 @@ function ReportsPage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-200 cursor-pointer ${
                 startDate === "2026-04-01" && endDate === "2026-06-30"
                   ? "bg-blue-600/20 text-blue-400 border-blue-500/30"
-                  : "bg-white/5 text-[var(--text-secondary)] border-white/5 hover:bg-white/10"
+                  : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border-[var(--border-color)] hover:bg-[var(--bg-hover)]"
               }`}
             >
               This Quarter (Q2)
@@ -422,7 +432,7 @@ function ReportsPage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-200 cursor-pointer ${
                 startDate === "2026-01-01" && endDate === "2026-12-31"
                   ? "bg-blue-600/20 text-blue-400 border-blue-500/30"
-                  : "bg-white/5 text-[var(--text-secondary)] border-white/5 hover:bg-white/10"
+                  : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border-[var(--border-color)] hover:bg-[var(--bg-hover)]"
               }`}
             >
               Full Year 2026
@@ -440,7 +450,8 @@ function ReportsPage() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full sm:w-44 pl-10 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-primary)] text-xs font-medium focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all duration-300"
+                autoComplete="off"
+                className="w-full sm:w-44 pl-10 pr-4 py-2 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs font-medium focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all duration-300"
               />
             </div>
           </div>
@@ -452,7 +463,8 @@ function ReportsPage() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full sm:w-44 pl-10 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-primary)] text-xs font-medium focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all duration-300"
+                autoComplete="off"
+                className="w-full sm:w-44 pl-10 pr-4 py-2 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs font-medium focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all duration-300"
               />
             </div>
           </div>
@@ -469,9 +481,9 @@ function ReportsPage() {
               <FaMoneyBillWave />
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">₹{stats?.total_expenses ?? 0}</h3>
+          <h3 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">₹{rangeTotalExpenses.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</h3>
           <p className="text-xs text-[var(--text-secondary)] mt-2">
-            Pending Approval: <strong className="text-yellow-400">₹{stats?.pending_expenses ?? 0}</strong>
+            Pending Approval: <strong className="text-yellow-400">₹{parseFloat(stats?.pending_expenses_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</strong> ({stats?.pending_expenses_count ?? 0} claims)
           </p>
         </div>
 
@@ -498,10 +510,10 @@ function ReportsPage() {
             </div>
           </div>
           <h3 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">
-            {stats?.completed_tasks ?? 0} / {stats?.total_tasks ?? 0}
+            {rangeCompletedTasks} / {rangeTotalTasks}
           </h3>
           <p className="text-xs text-[var(--text-secondary)] mt-2">
-            Completion Rate: <strong className="text-blue-400">{stats?.total_tasks ? ((stats.completed_tasks / stats.total_tasks) * 100).toFixed(0) : 0}%</strong>
+            Completion Rate: <strong className="text-blue-400">{rangeCompletionRate}%</strong>
           </p>
         </div>
 
@@ -513,9 +525,9 @@ function ReportsPage() {
               <FaUserCheck />
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">{stats?.total_users ?? 0}</h3>
+          <h3 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">{rangeActiveStaff} / {rangeTotalStaff}</h3>
           <p className="text-xs text-[var(--text-secondary)] mt-2">
-            Active Force: <strong className="text-emerald-400">{stats?.active_users ?? 0} Members</strong>
+            Active Force: <strong className="text-emerald-400">{rangeActiveStaff} Members Assigned</strong>
           </p>
         </div>
       </motion.div>
@@ -536,7 +548,7 @@ function ReportsPage() {
             </div>
             <div className="h-[300px]">
               {expenseChartData.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-slate-500 text-sm border border-dashed border-white/5 rounded-xl">
+                <div className="h-full flex items-center justify-center text-slate-500 text-sm border border-dashed border-[var(--border-color)] rounded-xl">
                   No expense records found inside the defined range.
                 </div>
               ) : (
@@ -581,7 +593,7 @@ function ReportsPage() {
             </div>
             <div className="h-[300px] flex items-center justify-center">
               {taskChartData.length === 0 ? (
-                <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm border border-dashed border-white/5 rounded-xl">
+                <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm border border-dashed border-[var(--border-color)] rounded-xl">
                   No task metrics available for selected dates.
                 </div>
               ) : (
@@ -615,7 +627,7 @@ function ReportsPage() {
                   </div>
                   <div className="flex flex-col gap-3 w-full sm:w-1/2">
                     {taskChartData.map((item, idx) => (
-                      <div key={item.name} className="flex justify-between items-center border-b border-white/5 pb-2">
+                      <div key={item.name} className="flex justify-between items-center border-b border-[var(--border-color)] pb-2">
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
                           <span className="text-xs text-[var(--text-secondary)] font-medium">{item.name}</span>
@@ -640,23 +652,18 @@ function ReportsPage() {
           </div>
           
           {/* Inner Search Box */}
-          <div className="relative w-full sm:w-64">
-            <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-            <input
-              type="text"
-              placeholder="Search employee name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-primary)] text-xs placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 transition-all duration-300"
-            />
-          </div>
+          <TableSearch
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search employee name..."
+          />
         </div>
 
         {/* Ledger Table */}
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left text-xs">
             <thead>
-              <tr className="border-b border-white/5 text-[var(--text-secondary)] font-semibold">
+              <tr className="border-b border-[var(--border-color)] text-[var(--text-secondary)] font-semibold">
                 <th className="pb-3 pl-4">Staff Member</th>
                 <th className="pb-3 text-center">Allocated Tasks</th>
                 <th className="pb-3 text-center">Completed Work</th>
@@ -683,7 +690,7 @@ function ReportsPage() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -5 }}
                         transition={{ duration: 0.2 }}
-                        className="border-b border-white/5 hover:bg-white/2 transition-colors group"
+                        className="border-b border-[var(--border-color)] hover:bg-[var(--bg-hover)] transition-colors group"
                       >
                         <td className="py-4 pl-4 font-bold text-[var(--text-primary)] group-hover:text-blue-400 transition-colors duration-200">
                           {item.full_name}
@@ -697,7 +704,7 @@ function ReportsPage() {
                         <td className="py-4 pr-4">
                           <div className="flex items-center gap-3">
                             <span className="font-semibold text-[var(--text-secondary)] w-8">{ratio}%</span>
-                            <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
+                            <div className="flex-1 h-2 rounded-full bg-[var(--bg-tertiary)] overflow-hidden">
                               <motion.div 
                                 initial={{ width: 0 }}
                                 animate={{ width: `${ratio}%` }}
@@ -741,10 +748,10 @@ function ReportsPage() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 20, stiffness: 100 }}
-              className="fixed top-0 right-0 h-full w-full sm:w-[480px] bg-[var(--bg-secondary)] border-l border-white/10 z-[101] shadow-2xl p-6 overflow-y-auto flex flex-col justify-between"
+              className="fixed top-0 right-0 h-full w-full sm:w-[480px] bg-[var(--bg-secondary)] border-l border-[var(--border-color)] z-[101] shadow-2xl p-6 overflow-y-auto flex flex-col justify-between"
             >
               <div>
-                <div className="flex justify-between items-center pb-4 border-b border-white/5 mb-6">
+                <div className="flex justify-between items-center pb-4 border-b border-[var(--border-color)] mb-6">
                   <div className="flex items-center gap-2.5">
                     <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                       <FaRobot className="text-xl animate-pulse" />
@@ -756,7 +763,7 @@ function ReportsPage() {
                   </div>
                   <button
                     onClick={() => setIsAiOpen(false)}
-                    className="p-2 rounded-lg bg-white/5 text-slate-400 hover:text-[var(--text-primary)] transition-all cursor-pointer"
+                    className="p-2 rounded-lg bg-[var(--bg-tertiary)] text-slate-400 hover:text-[var(--text-primary)] transition-all cursor-pointer"
                   >
                     <FaTimes />
                   </button>
@@ -774,11 +781,11 @@ function ReportsPage() {
                     <div className="space-y-6">
                       {/* Metric Grid inside drawer */}
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center">
+                        <div className="p-4 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-center">
                           <p className="text-[10px] text-[var(--text-secondary)] font-bold uppercase">Work Completion Velocity</p>
                           <p className="text-2xl font-black text-indigo-400 mt-1">{aiInsights.statistics.velocity}%</p>
                         </div>
-                        <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center">
+                        <div className="p-4 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-center">
                           <p className="text-[10px] text-[var(--text-secondary)] font-bold uppercase">Staff Bottlenecks</p>
                           <p className="text-2xl font-black text-rose-400 mt-1">{aiInsights.statistics.bottlenecks}</p>
                         </div>
@@ -835,10 +842,10 @@ function ReportsPage() {
                 )}
               </div>
 
-              <div className="border-t border-white/5 pt-4 mt-6">
+              <div className="border-t border-[var(--border-color)] pt-4 mt-6">
                 <button
                   onClick={() => setIsAiOpen(false)}
-                  className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--text-primary)] font-bold text-xs transition-all cursor-pointer text-center"
+                  className="w-full py-2.5 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] font-bold text-xs border border-[var(--border-color)] transition-all cursor-pointer text-center"
                 >
                   Dismiss Drawer
                 </button>

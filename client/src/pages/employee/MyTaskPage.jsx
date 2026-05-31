@@ -2,21 +2,26 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { getTasks, updateTask } from "../../services/taskService";
+import { createExpense } from "../../services/expenseService";
 import { useAuth } from "../../context/AuthContext";
 import DataTable from "../../components/tables/DataTable";
 import EmptyState from "../../components/common/EmptyState";
-import { FaClock, FaCheckCircle, FaSpinner, FaEdit, FaTimes, FaComment } from "react-icons/fa";
+import { FaClock, FaCheckCircle, FaSpinner, FaEdit, FaTimes, FaComment, FaUser, FaMoneyBill, FaEye, FaSearch } from "react-icons/fa";
 import TaskDetailsModal from "../../components/modals/TaskDetailsModal";
+import ExpenseModal from "../../components/modals/ExpenseModal";
 import { AnimatePresence } from "framer-motion";
+import TableSearch from "../../components/tables/TableSearch";
 
 function MyTaskPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [updateItem, setUpdateItem] = useState(null);
   const [viewItem, setViewItem] = useState(null);
+  const [expensePreselectedTask, setExpensePreselectedTask] = useState(null);
   const [status, setStatus] = useState("PENDING");
   const [progress, setProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch all tasks
   const { data: tasks, isLoading } = useQuery({
@@ -26,6 +31,32 @@ function MyTaskPage() {
 
   // Filter tasks assigned to this employee
   const myTasks = tasks?.filter((t) => t.assigned_to === user?.id) || [];
+
+  const filteredTasks = myTasks.filter((task) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      task.title?.toLowerCase().includes(query) ||
+      task.description?.toLowerCase().includes(query) ||
+      task.project_name?.toLowerCase().includes(query) ||
+      task.assigned_by_name?.toLowerCase().includes(query)
+    );
+  });
+
+  const createExpenseMutation = useMutation({
+    mutationFn: createExpense,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["expenses"]);
+      setExpensePreselectedTask(null);
+      toast.success("Expense claim filed successfully for the task");
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Failed to file expense claim");
+    },
+  });
+
+  const handleExpenseSubmit = (formData) => {
+    createExpenseMutation.mutate(formData);
+  };
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => updateTask(id, data),
@@ -59,12 +90,12 @@ function MyTaskPage() {
 
   const getPriorityBadge = (priority) => {
     const colors = {
-      CRITICAL: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
-      HIGH: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-      MEDIUM: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-      LOW: "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
+      CRITICAL: "bg-red-500/10 text-red-600 border-red-500/20",
+      HIGH: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+      MEDIUM: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+      LOW: "bg-slate-500/10 text-slate-600 border-slate-500/20",
     };
-    return colors[priority] || "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20";
+    return colors[priority] || "bg-slate-500/10 text-slate-600 border-slate-500/20";
   };
 
   const getStatusIcon = (taskStatus) => {
@@ -80,87 +111,22 @@ function MyTaskPage() {
     }
   };
 
-  const columns = [
-    { key: "title", title: "Task Title" },
-    {
-      key: "project_name",
-      title: "Project",
-      render: (row) => row.project_name || "—",
-    },
-    {
-      key: "priority",
-      title: "Priority",
-      render: (row) => (
-        <span className={`px-2.5 py-0.5 rounded-full text-2xs font-extrabold uppercase border ${getPriorityBadge(row.priority)}`}>
-          {row.priority}
-        </span>
-      ),
-    },
-    {
-      key: "due_date",
-      title: "Due Date",
-      render: (row) => (row.due_date ? new Date(row.due_date).toLocaleDateString() : "—"),
-    },
-    {
-      key: "status",
-      title: "Status",
-      render: (row) => (
-        <div className="flex items-center gap-1.5 font-semibold text-sm">
-          {getStatusIcon(row.status)}
-          <span className="capitalize">{row.status?.toLowerCase().replace("_", " ")}</span>
-        </div>
-      ),
-    },
-    {
-      key: "completion_percentage",
-      title: "Progress Meter",
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <div className="w-24 bg-[var(--text-secondary)]/10 rounded-full h-2 border border-[var(--border-color)]">
-            <div
-              className={`h-2 rounded-full transition-all duration-300 ${
-                row.status === "COMPLETED" ? "bg-emerald-500" : "bg-[var(--accent-blue)]"
-              }`}
-              style={{ width: `${row.completion_percentage}%` }}
-            />
-          </div>
-          <span className="text-xs font-bold text-[var(--text-secondary)]">{row.completion_percentage}%</span>
-        </div>
-      ),
-    },
-    {
-      key: "actions",
-      title: "Task Actions",
-      render: (row) => (
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setUpdateItem(row);
-              setStatus(row.status || "PENDING");
-              setProgress(row.completion_percentage || 0);
-            }}
-            className="px-3 py-1.5 bg-[var(--accent-blue)]/10 hover:bg-[var(--accent-blue)]/20 text-[var(--accent-blue)] rounded-xl text-xs font-bold transition-all flex items-center gap-1 border border-[var(--accent-blue)]/20 hover:border-[var(--accent-blue)]/40 cursor-pointer"
-          >
-            <FaEdit /> Log Progress
-          </button>
-          <button
-            onClick={() => setViewItem(row)}
-            className="px-3 py-1.5 bg-[var(--accent-purple)]/10 hover:bg-[var(--accent-purple)]/20 text-[var(--accent-purple)] rounded-xl text-xs font-bold transition-all flex items-center gap-1 border border-[var(--accent-purple)]/20 hover:border-[var(--accent-purple)]/40 cursor-pointer"
-          >
-            <FaComment /> Discuss
-          </button>
-        </div>
-      ),
-    },
-  ];
-
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)]">
-          My Tasks
-        </h1>
-        <p className="text-[var(--text-secondary)] text-sm mt-1">Track milestones and update completion progress of your delegated assignments</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)]">
+            My Tasks
+          </h1>
+          <p className="text-[var(--text-secondary)] text-sm mt-1">Track milestones and update completion progress of your delegated assignments</p>
+        </div>
+
+        {/* Search Field */}
+        <TableSearch
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search tasks..."
+        />
       </div>
 
       {myTasks.length === 0 ? (
@@ -168,17 +134,142 @@ function MyTaskPage() {
           title="All Caught Up!"
           description="You currently have no tasks assigned to you. Enjoy your day or consult with your manager for new allocations."
         />
-      ) : (
-        <DataTable
-          columns={columns}
-          data={myTasks}
-          loading={isLoading}
-          actions={false}
+      ) : filteredTasks.length === 0 ? (
+        <EmptyState
+          title="No Matching Tasks"
+          description="No tasks match your search query. Try typing another title, project, or supervisor."
         />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredTasks.map((task) => (
+            <div
+              key={task.id}
+              onClick={() => setViewItem(task)}
+              className="glass-panel rounded-2xl p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 cursor-pointer border border-[var(--border-color)]/60"
+            >
+              <div className="space-y-4">
+                {/* Header */}
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="p-2 bg-[var(--accent-blue)]/10 rounded-xl flex-shrink-0">
+                      {getStatusIcon(task.status)}
+                    </div>
+                    <h3 className="font-bold text-[var(--text-primary)] tracking-tight text-md line-clamp-2 leading-tight pr-1" title={task.title}>
+                      {task.title}
+                    </h3>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-2xs font-extrabold uppercase border flex-shrink-0 ${getPriorityBadge(task.priority)}`}>
+                    {task.priority}
+                  </span>
+                </div>
+
+                {/* Metadata */}
+                <div className="space-y-2 text-xs pt-1">
+                  <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+                    <span className="font-semibold">Project:</span>
+                    <span className="font-bold text-[var(--text-primary)] truncate max-w-[180px]">{task.project_name || "Internal"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[var(--text-secondary)] font-semibold">Assigned By:</span>
+                    <div className="flex items-center gap-1 font-bold text-[var(--accent-purple)] bg-[var(--accent-purple)]/5 px-2 py-0.5 rounded-lg border border-[var(--accent-purple)]/10">
+                      <FaUser className="text-[10px]" />
+                      <span>{task.assigned_by_name || "System/Admin"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description Snippet */}
+                <p className="text-sm text-[var(--text-secondary)] line-clamp-3 min-h-[4.5rem]" title={task.description}>
+                  {task.description || "No specific details were logged for this assignment."}
+                </p>
+              </div>
+
+              {/* Progress & Actions */}
+              <div className="mt-6 pt-4 border-t border-[var(--border-color)] space-y-4">
+                {/* Progress Bar */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs font-bold text-[var(--text-secondary)]">
+                    <span>Task Progress</span>
+                    <span className="text-[var(--accent-blue)]">{task.completion_percentage}%</span>
+                  </div>
+                  <div className="w-full bg-[var(--text-secondary)]/10 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        task.status === "COMPLETED" ? "bg-emerald-500" : "bg-[var(--accent-blue)]"
+                      }`}
+                      style={{ width: `${task.completion_percentage}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Due Date & Status text */}
+                <div className="flex justify-between items-center text-2xs pt-1">
+                  <span className="font-bold text-[var(--text-secondary)] flex items-center gap-1 bg-[var(--bg-primary)]/40 p-2 rounded-xl border border-[var(--border-color)]">
+                    <FaClock className="text-[var(--accent-blue)]" /> Due: {task.due_date ? new Date(task.due_date).toLocaleDateString() : "â€”"}
+                  </span>
+                  <span className="font-bold text-[var(--text-secondary)] capitalize flex items-center gap-1 bg-[var(--bg-primary)]/40 p-2 rounded-xl border border-[var(--border-color)]">
+                    Status: <span className="text-[var(--text-primary)] font-bold">{task.status?.toLowerCase().replace("_", " ")}</span>
+                  </span>
+                </div>
+
+                {/* Compact Row of 2 Actions */}
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  {task.status === "COMPLETED" ? (
+                    <button
+                      type="button"
+                      disabled
+                      className="py-2.5 bg-slate-100 text-slate-500 rounded-xl text-2xs font-extrabold tracking-wide uppercase flex items-center justify-center gap-1.5 border border-slate-200 cursor-not-allowed"
+                      title="Task Completed & Locked"
+                    >
+                      <FaCheckCircle className="text-[10px] text-emerald-500" /> Completed
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUpdateItem(task);
+                        setStatus(task.status || "PENDING");
+                        setProgress(task.completion_percentage || 0);
+                      }}
+                      className="py-2.5 bg-[var(--accent-blue)]/10 hover:bg-[var(--accent-blue)]/20 text-[var(--accent-blue)] rounded-xl text-2xs font-extrabold tracking-wide uppercase transition-all flex items-center justify-center gap-1.5 border border-[var(--accent-blue)]/20 cursor-pointer focus:outline-none"
+                      title="Log Progress"
+                    >
+                      <FaEdit className="text-[10px]" /> Log Progress
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setExpensePreselectedTask(task);
+                    }}
+                    className="py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 rounded-xl text-2xs font-extrabold tracking-wide uppercase transition-all flex items-center justify-center gap-1.5 border border-emerald-500/20 cursor-pointer focus:outline-none"
+                    title="Add Expense"
+                  >
+                    <FaMoneyBill className="text-[10px]" /> Add Expense
+                  </button>
+                </div>
+
+                {/* Full-width View Task Button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setViewItem(task);
+                  }}
+                  className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/10 cursor-pointer flex items-center justify-center gap-1.5 focus:outline-none"
+                >
+                  <FaEye className="text-[11px]" /> View Task Details
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
       {updateItem && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex justify-center items-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-800/40 flex justify-center items-center p-4">
           <div className="glass-panel rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold text-[var(--text-primary)]">Log Task Progress</h2>
@@ -271,8 +362,18 @@ function MyTaskPage() {
           />
         )}
       </AnimatePresence>
+
+      <ExpenseModal
+        isOpen={!!expensePreselectedTask}
+        onClose={() => setExpensePreselectedTask(null)}
+        onSubmit={handleExpenseSubmit}
+        loading={createExpenseMutation.isPending}
+        preselectedTask={expensePreselectedTask}
+      />
     </div>
   );
 }
 
 export default MyTaskPage;
+
+

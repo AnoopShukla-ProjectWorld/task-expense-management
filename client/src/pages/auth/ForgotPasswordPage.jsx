@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -56,17 +56,17 @@ const ForgotPasswordPage = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-md z-10"
       >
-        <div className="glass-panel bg-[var(--bg-secondary)] rounded-3xl p-8 sm:p-10 border border-slate-200 dark:border-slate-800/80 shadow-2xl relative">
+        <div className="glass-panel bg-[var(--bg-secondary)] rounded-3xl p-8 sm:p-10 border border-slate-200 shadow-2xl relative">
           
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-md shadow-blue-500/20 text-white text-2xl mb-4">
               <FaKey />
             </div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-2">
               Recover Workspace Password
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-slate-500">
               Input your corporate email address to receive a secure password recovery token
             </p>
           </div>
@@ -76,16 +76,17 @@ const ForgotPasswordPage = () => {
               
               {/* Email Address */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   Corporate Email Address
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
                     <FaEnvelope />
                   </span>
                   <input
                     type="email"
                     placeholder="name@company.com"
+                    autoComplete="off"
                     {...register("email", { 
                       required: "Email is required",
                       pattern: {
@@ -93,7 +94,7 @@ const ForgotPasswordPage = () => {
                         message: "Invalid email address"
                       }
                     })}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:bg-white dark:focus:bg-slate-950/80 transition-all duration-200"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all duration-200"
                   />
                 </div>
                 {errors.email && (
@@ -119,9 +120,9 @@ const ForgotPasswordPage = () => {
           ) : (
             <div className="text-center space-y-4 py-4">
               <div className="text-emerald-500 text-sm font-semibold bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl">
-                📬 Recovery link dispatched successfully!
+                ðŸ“¬ Recovery link dispatched successfully!
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500">
                 A password recovery email containing your unique restoration link has been logged inside server terminal logs. Use the link to establish a new password.
               </p>
               <Link
@@ -140,3 +141,4 @@ const ForgotPasswordPage = () => {
 };
 
 export default ForgotPasswordPage;
+

@@ -3,9 +3,12 @@ import Sidebar from "../components/dashboard/Sidebar";
 import Navbar from "../components/dashboard/Navbar";
 import { Outlet } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
+import AICopilotWidget from "../components/dashboard/AICopilotWidget";
 
 function DashboardLayout() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <div className="h-screen w-full overflow-hidden flex bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
@@ -30,7 +33,7 @@ function DashboardLayout() {
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileSidebarOpen(false)}
-              className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+              className="fixed inset-0 bg-slate-800/50 z-40 lg:hidden"
             />
             {/* Drawer */}
             <motion.div
@@ -61,6 +64,9 @@ function DashboardLayout() {
           </motion.div>
         </main>
       </div>
+
+      {/* Global AI Copilot Widget for Administrators */}
+      {user?.role === "ADMIN" && <AICopilotWidget />}
     </div>
   );
 }

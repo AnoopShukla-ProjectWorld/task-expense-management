@@ -543,6 +543,7 @@ const login = asyncHandler(async (req, res) => {
       full_name: user.full_name,
       email: user.email,
       role: user.role.toUpperCase(),
+      profile_image: user.profile_image,
     }
   });
 });
@@ -618,6 +619,7 @@ const secureAdminLogin = asyncHandler(async (req, res) => {
       full_name: user.full_name,
       email: user.email,
       role: "ADMIN",
+      profile_image: user.profile_image,
     }
   });
 });
@@ -749,6 +751,7 @@ const getMe = asyncHandler(async (req, res) => {
       email: user.email,
       role: user.role ? user.role.toUpperCase() : null,
       status: user.status,
+      profile_image: user.profile_image,
     }
   });
 });

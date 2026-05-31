@@ -35,7 +35,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await getMeApi();
       if (response && response.data && response.data.user) {
-        setUser(response.data.user);
+        const u = response.data.user;
+        setUser({
+          ...u,
+          fullName: u.full_name || u.fullName || "",
+        });
         safeSetItem("session_active", "true");
       } else {
         setUser(null);
@@ -50,22 +54,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // ALWAYS verify session with the backend on every app init.
-    //
-    // WHY we removed the localStorage "session_active" gate:
-    // Chrome shares localStorage across ALL tabs of the SAME Incognito window.
-    // So if the user ever logged in during an incognito session, "session_active"
-    // persists for all subsequent incognito tabs — making localStorage useless
-    // as a security boundary.
-    //
-    // The HTTP-only cookie IS the true security boundary:
-    //   - Normal browser ↔ Incognito: completely isolated cookie jars ✅
-    //   - Same normal-browser tabs: shared cookies (session preserved) ✅
-    //   - Page refresh: cookies persist (no logout) ✅
-    //   - Fresh incognito window (no prior login): no cookie → 401 → redirect ✅
-    //   - Fresh incognito window (was previously logged in this session): cookie
-    //     validates on backend → session restored (correct behavior) ✅
-    fetchUser();
+    // Check if the localStorage active session flag exists.
+    // Since localStorage is isolated between normal and Incognito profiles, 
+    // a fresh Incognito window/tab will never have this flag, causing it to instantly redirect to /login.
+    const isSessionActive = safeGetItem("session_active") === "true";
+    if (isSessionActive) {
+      // Dynamic verification on the backend to validate active cookies/tokens
+      fetchUser();
+    } else {
+      // Force instant redirect to /login
+      setUser(null);
+      setLoading(false);
+    }
 
     const handleSessionExpired = () => {
       const wasActive = safeGetItem("session_active") === "true";
@@ -89,11 +89,16 @@ export const AuthProvider = ({ children }) => {
       const response = await loginApi(credentials);
       const loggedInUser = response.data.user; // response = { data: { user } }
 
-      setUser(loggedInUser);
+      const normalizedUser = {
+        ...loggedInUser,
+        fullName: loggedInUser.full_name || loggedInUser.fullName || "",
+      };
+
+      setUser(normalizedUser);
       safeSetItem("session_active", "true");
       toast.success("Login successful");
 
-      return { success: true, user: loggedInUser };
+      return { success: true, user: normalizedUser };
     } catch (error) {
       const message = error.response?.data?.message || "Login failed";
       toast.error(message);

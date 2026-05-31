@@ -112,6 +112,22 @@ const updateTaskService = async (
     );
   }
 
+  // Reset task progress and status to PENDING if assigned to a new user
+  if (updateData.assigned_to !== undefined && parseInt(updateData.assigned_to) !== task.assigned_to) {
+    updateData.status = "PENDING";
+    updateData.completion_percentage = 0;
+  } else {
+    // Sync completion percentage and status strictly
+    if (updateData.status === "COMPLETED") {
+      updateData.completion_percentage = 100;
+    } else if (updateData.completion_percentage !== undefined && parseInt(updateData.completion_percentage) === 100) {
+      updateData.status = "COMPLETED";
+    } else if (updateData.status && updateData.status !== "COMPLETED" && (updateData.completion_percentage === undefined || parseInt(updateData.completion_percentage) === 100)) {
+      // If moved back from COMPLETED but percentage is still at 100 (or not updated), drop it to 90% to allow employee progress logging again
+      updateData.completion_percentage = 90;
+    }
+  }
+
   const updatedTask =
     await updateTask(
       taskId,

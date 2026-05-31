@@ -23,6 +23,7 @@ const {
   getAllExpenses,
   reviewExpense,
   deleteExpense,
+  updateExpense,
 } = require(
   "../controllers/expenseController"
 );
@@ -96,6 +97,18 @@ router.delete(
   authMiddleware,
 
   deleteExpense
+);
+
+// ============================================
+// UPDATE EXPENSE
+// ============================================
+router.put(
+  "/:id",
+  authMiddleware,
+  upload.single("receipt"),
+  createExpenseValidation,
+  validateMiddleware,
+  updateExpense
 );
 
 module.exports = router;

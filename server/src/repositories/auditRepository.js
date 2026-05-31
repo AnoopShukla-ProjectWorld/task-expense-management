@@ -135,6 +135,7 @@ const getAuditLogs = async ({
         al.action LIKE @search
         OR al.entity_name LIKE @search
         OR CONCAT(u.first_name, ' ', u.last_name) LIKE @search
+        OR u.email LIKE @search
       )
     `;
   }

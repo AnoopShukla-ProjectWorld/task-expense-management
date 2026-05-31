@@ -58,8 +58,8 @@ const getProjectAnalyticsService =
 // ============================================
 
 const getUserProductivityService =
-  async () => {
-    return await getUserProductivity();
+  async (filters) => {
+    return await getUserProductivity(filters);
   };
 
 

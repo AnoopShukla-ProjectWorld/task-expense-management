@@ -38,6 +38,8 @@ const {
 );
 
 
+const upload = require("../middlewares/uploadMiddleware");
+
 // ============================================
 // TASK ROUTES
 // ============================================
@@ -49,6 +51,7 @@ router.post(
     "ADMIN",
     "MANAGER"
   ),
+  upload.single("document"),
   createTaskValidation,
   validateMiddleware,
   createTask
@@ -63,6 +66,7 @@ router.get(
 router.put(
   "/:id",
   authMiddleware,
+  upload.single("document"),
   updateTaskValidation,
   validateMiddleware,
   updateTask

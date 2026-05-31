@@ -123,7 +123,7 @@ const userProductivity =
   asyncHandler(
     async (req, res) => {
       const data =
-        await getUserProductivityService();
+        await getUserProductivityService(req.query);
 
       return successResponse(
         res,
@@ -143,10 +143,27 @@ const exportCSV =
   asyncHandler(
     async (req, res) => {
       const data =
-        await getUserProductivityService();
+        await getUserProductivityService(req.query);
+
+      const formattedData = data.map(item => {
+        const total = Number(item.total_tasks) || 0;
+        const completed = Number(item.completed_tasks) || 0;
+        const pending = Number(item.pending_tasks) || 0;
+        const ratio = total > 0 ? Math.round((completed / total) * 100) : 0;
+        return {
+          "Employee ID": item.employee_id || "N/A",
+          "Staff Member Name": item.full_name,
+          "Corporate Email": item.email,
+          "Department": item.department_name || "General / Unassigned",
+          "Total Allocated Tasks": total,
+          "Completed Tasks": completed,
+          "Pending Tasks": pending,
+          "Completion Ratio (%)": `${ratio}%`
+        };
+      });
 
       const csv =
-        exportToCSV(data);
+        exportToCSV(formattedData);
 
       res.header(
         "Content-Type",
@@ -170,12 +187,29 @@ const exportExcel =
   asyncHandler(
     async (req, res) => {
       const data =
-        await getUserProductivityService();
+        await getUserProductivityService(req.query);
+
+      const formattedData = data.map(item => {
+        const total = Number(item.total_tasks) || 0;
+        const completed = Number(item.completed_tasks) || 0;
+        const pending = Number(item.pending_tasks) || 0;
+        const ratio = total > 0 ? Math.round((completed / total) * 100) : 0;
+        return {
+          "Employee ID": item.employee_id || "N/A",
+          "Staff Member Name": item.full_name,
+          "Corporate Email": item.email,
+          "Department": item.department_name || "General / Unassigned",
+          "Total Allocated Tasks": total,
+          "Completed Tasks": completed,
+          "Pending Tasks": pending,
+          "Completion Ratio (%)": `${ratio}%`
+        };
+      });
 
       const workbook =
         await exportToExcel(
-          data,
-          "Report"
+          formattedData,
+          "Staff Productivity"
         );
 
       res.setHeader(

@@ -1,9 +1,10 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes, FaComment, FaPaperPlane, FaUser, FaClock, FaCalendarAlt, FaStar } from "react-icons/fa";
+import { FaTimes, FaComment, FaPaperPlane, FaUser, FaClock, FaCalendarAlt, FaStar, FaFilePdf } from "react-icons/fa";
 import { getTaskComments, createTaskComment } from "../../services/taskService";
 import { useAuth } from "../../context/AuthContext";
+import { handleSafeDownload } from "../../utils/fileUtils";
 import toast from "react-hot-toast";
 
 // Helper to format comment time beautifully
@@ -14,7 +15,7 @@ const formatCommentTime = (dateStr) => {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true
-  }) + " • " + date.toLocaleDateString("en-IN", {
+  }) + " â€¢ " + date.toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short"
   });
@@ -24,6 +25,7 @@ function TaskDetailsModal({ task, onClose }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState("");
+  const backendBaseUrl = import.meta.env.VITE_API_BASE_URL.replace("/api/v1", "");
 
   // Live Comments Fetching
   const { data: comments = [], isLoading } = useQuery({
@@ -61,7 +63,7 @@ function TaskDetailsModal({ task, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4">
+    <div className="fixed inset-0 z-50 bg-slate-800/40 backdrop-blur-sm flex justify-center items-center p-4">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -71,16 +73,22 @@ function TaskDetailsModal({ task, onClose }) {
       >
         {/* Modal Header */}
         <div className="flex justify-between items-start p-6 border-b border-[var(--border-color)]/60">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2.5">
+          <div className="space-y-1.5 flex-1 min-w-0 pr-4">
+            <div className="flex flex-wrap items-center gap-2.5">
               <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${getPriorityColor(task.priority)}`}>
                 {task.priority} Priority
               </span>
-              <span className="text-xs text-[var(--text-secondary)] font-semibold">
+              <span className="text-xs text-[var(--text-secondary)] font-semibold border-l border-[var(--border-color)]/60 pl-2.5">
                 Project: {task.project_name || "Internal"}
               </span>
+              {task.assigned_by_name && (
+                <span className="text-xs text-[var(--accent-purple)] font-bold border-l border-[var(--border-color)]/60 pl-2.5 flex items-center gap-1">
+                  <FaUser className="text-[10px]" />
+                  Assigned By: {task.assigned_by_name}
+                </span>
+              )}
             </div>
-            <h2 className="text-xl font-bold text-[var(--text-primary)] leading-snug">{task.title}</h2>
+            <h2 className="text-xl font-bold text-[var(--text-primary)] leading-snug truncate" title={task.title}>{task.title}</h2>
           </div>
           <button
             onClick={onClose}
@@ -98,6 +106,23 @@ function TaskDetailsModal({ task, onClose }) {
             <p className="text-sm text-[var(--text-primary)] bg-[var(--bg-tertiary)] p-4 rounded-xl border border-[var(--border-color)] leading-relaxed">
               {task.description || "No specific details were logged for this assignment."}
             </p>
+            {task.document_path && (
+              <div className="p-3.5 bg-indigo-50 border border-indigo-100/80 rounded-xl flex items-center justify-between mt-2.5 shadow-sm shadow-indigo-600/5">
+                <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700">
+                  <FaFilePdf className="text-rose-500 text-lg" />
+                  <span className="truncate max-w-[280px]">Operational Guidelines & Blueprint Specs.pdf</span>
+                </div>
+                <button
+                  onClick={() => {
+                    const fileUrl = task.document_path ? (task.document_path.startsWith('http') ? task.document_path : `${backendBaseUrl}${task.document_path}`) : "";
+                    handleSafeDownload(fileUrl);
+                  }}
+                  className="px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-lg text-2xs font-extrabold uppercase tracking-wider transition-all shadow-sm shadow-indigo-600/10 cursor-pointer flex items-center gap-1.5 focus:outline-none"
+                >
+                  <span>Download Specs</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Workflow Metas */}
@@ -167,7 +192,7 @@ function TaskDetailsModal({ task, onClose }) {
                       {/* Avatar node */}
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center border text-xs font-bold ${
                         isCurrentUser 
-                          ? "bg-indigo-500/20 text-indigo-500 dark:text-indigo-400 border-indigo-500/30" 
+                          ? "bg-indigo-500/20 text-indigo-500 border-indigo-500/30" 
                           : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border-[var(--border-color)]"
                       }`}>
                         <FaUser className="text-[10px]" />
@@ -177,7 +202,7 @@ function TaskDetailsModal({ task, onClose }) {
                       <div className="space-y-1">
                         <div className={`p-3 rounded-2xl text-xs border ${
                           isCurrentUser 
-                            ? "bg-indigo-600/10 border-indigo-500/30 text-indigo-950 dark:text-indigo-200 rounded-tr-none" 
+                            ? "bg-indigo-600/10 border-indigo-500/30 text-indigo-900 rounded-tr-none" 
                             : "bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-tl-none"
                         }`}>
                           <p className="font-semibold text-[10px] text-[var(--text-secondary)] mb-1">
@@ -204,6 +229,7 @@ function TaskDetailsModal({ task, onClose }) {
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 disabled={commentMutation.isPending}
+                autoComplete="off"
                 className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 text-xs focus:outline-none focus:border-indigo-500/50 transition-all duration-300 focus:bg-[var(--bg-secondary)]"
               />
               <button
@@ -233,3 +259,4 @@ function TaskDetailsModal({ task, onClose }) {
 }
 
 export default TaskDetailsModal;
+

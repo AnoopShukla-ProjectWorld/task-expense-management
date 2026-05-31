@@ -23,9 +23,14 @@ const {
 
 const createProject = asyncHandler(
   async (req, res) => {
+    const projectData = { ...req.body };
+    if (req.file) {
+      projectData.document_path = `/uploads/projects/${req.file.filename}`;
+    }
+
     const project =
       await createProjectService(
-        req.body,
+        projectData,
         req.user
       );
 
@@ -74,10 +79,15 @@ const getProjects = asyncHandler(
 
 const updateProject = asyncHandler(
   async (req, res) => {
+    const updateData = { ...req.body };
+    if (req.file) {
+      updateData.document_path = `/uploads/projects/${req.file.filename}`;
+    }
+
     const project =
       await updateProjectService(
         req.params.id,
-        req.body,
+        updateData,
         req.user
       );
 

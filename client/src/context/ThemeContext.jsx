@@ -8,37 +8,23 @@ import {
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [darkMode, setDarkMode] = useState(() => {
-    try {
-      const saved = localStorage.getItem("theme");
-      if (saved) return saved === "dark";
-    } catch (e) {
-      console.warn("localStorage is not available:", e);
-    }
-    return true; // Default to dark mode for premium SaaS look
-  });
+  const [darkMode, setDarkMode] = useState(false); // Force light theme only
 
   useEffect(() => {
     const root = document.documentElement;
-    if (darkMode) {
-      root.classList.add("dark");
-      root.setAttribute("data-theme", "dark");
-      try {
-        localStorage.setItem("theme", "dark");
-      } catch (e) {}
-    } else {
-      root.classList.remove("dark");
-      root.setAttribute("data-theme", "light");
-      try {
-        localStorage.setItem("theme", "light");
-      } catch (e) {}
-    }
-  }, [darkMode]);
+    root.classList.remove("dark");
+    root.setAttribute("data-theme", "light");
+    try {
+      localStorage.setItem("theme", "light");
+    } catch (e) {}
+  }, []);
 
-  const toggleTheme = () => setDarkMode((prev) => !prev);
+  const toggleTheme = () => {
+    // Keep as no-op to prevent broken clicks, remaining strictly light-theme
+  };
 
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleTheme }}>
+    <ThemeContext.Provider value={{ darkMode: false, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

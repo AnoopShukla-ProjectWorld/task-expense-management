@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const svgCaptcha = require("svg-captcha");
 
 const CAPTCHA_SECRET = process.env.JWT_ACCESS_SECRET || "captcha_secret_key_123";
 
@@ -19,20 +20,30 @@ const generateOtp = () => {
 };
 
 /**
- * Generate CAPTCHA text and its hash token
+ * Generate CAPTCHA text and its hash token as a secure Base64 vector path image
  */
 const generateCaptcha = () => {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Removed ambiguous chars like 0, O, I, 1, l
-  let text = "";
-  for (let i = 0; i < 6; i++) {
-    text += chars.charAt(crypto.randomInt(0, chars.length));
-  }
+  const captcha = svgCaptcha.create({
+    size: 6,
+    noise: 3,
+    color: true,
+    background: '#f8fafc',
+    width: 200,
+    height: 60,
+    fontSize: 44,
+    charPreset: "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", // Removed ambiguous characters
+  });
+
+  const hash = hashString(captcha.text.toUpperCase());
   
-  const hash = hashString(text.toUpperCase());
-  return {
-    text, // Send text to draw on canvas
-    hash, // Send hash to verify on submit
-  };
+  // Convert pure SVG string (which only has paths, NO text nodes) to Base64 Image URI
+  const base64 = Buffer.from(captcha.data).toString("base64");
+  const dataUri = `data:image/svg+xml;base64,${base64}`;
+
+    return {
+      image: dataUri, // Send visual representation
+      hash,          // Send SHA-256 hash to verify
+    };
 };
 
 /**

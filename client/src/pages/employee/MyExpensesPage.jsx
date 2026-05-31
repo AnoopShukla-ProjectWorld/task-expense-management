@@ -1,35 +1,68 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { getExpenses, createExpense, updateExpense, deleteExpense } from "../../services/expenseService";
 import { useAuth } from "../../context/AuthContext";
 import DataTable from "../../components/tables/DataTable";
 import ExpenseModal from "../../components/modals/ExpenseModal";
+import ExpenseDetailsModal from "../../components/modals/ExpenseDetailsModal";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import Button from "../../components/common/Button";
 import EmptyState from "../../components/common/EmptyState";
-import { FaFileDownload, FaPlus, FaReceipt } from "react-icons/fa";
+import { FaFileDownload, FaReceipt, FaEye, FaSearch } from "react-icons/fa";
+import { handleSafeDownload } from "../../utils/fileUtils";
+import { AnimatePresence } from "framer-motion";
+import TableSearch from "../../components/tables/TableSearch";
 
 function MyExpensesPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch all expenses
+  // Fetch personal expenses
   const { data: expenses, isLoading } = useQuery({
-    queryKey: ["expenses"],
-    queryFn: getExpenses,
+    queryKey: ["expenses", { my: true }],
+    queryFn: () => getExpenses({ my: true }),
   });
 
   // Filter expenses submitted by this employee
   const myExpenses = expenses?.filter((e) => e.user_id === user?.id) || [];
 
+  const filteredExpenses = myExpenses.filter((expense) => {
+    const query = searchQuery.toLowerCase();
+    const taskTitle = expense.task_title || "General / Unlinked";
+    const amountStr = expense.amount ? `₹${parseFloat(expense.amount).toFixed(2)}` : "";
+    
+    // Status text mapping matching columns
+    let statusText = "Awaiting Mgr";
+    if (expense.status === "APPROVED") {
+      statusText = "Approved";
+    } else if (expense.status === "REJECTED") {
+      statusText = "Rejected";
+    } else if (expense.manager_approval === "APPROVED") {
+      statusText = "Awaiting Admin";
+    }
+
+    return (
+      expense.category?.toLowerCase().includes(query) ||
+      expense.description?.toLowerCase().includes(query) ||
+      taskTitle.toLowerCase().includes(query) ||
+      expense.amount?.toString().includes(query) ||
+      amountStr.toLowerCase().includes(query) ||
+      statusText.toLowerCase().includes(query) ||
+      (expense.expense_date ? new Date(expense.expense_date).toLocaleDateString().includes(query) : false)
+    );
+  });
+
   const createMutation = useMutation({
     mutationFn: createExpense,
     onSuccess: () => {
-      queryClient.invalidateQueries(["expenses"]);
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
       setIsModalOpen(false);
       toast.success("Expense submitted successfully");
     },
@@ -41,7 +74,7 @@ function MyExpensesPage() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => updateExpense(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(["expenses"]);
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
       setIsModalOpen(false);
       setEditingExpense(null);
       toast.success("Expense updated successfully");
@@ -54,7 +87,7 @@ function MyExpensesPage() {
   const deleteMutation = useMutation({
     mutationFn: deleteExpense,
     onSuccess: () => {
-      queryClient.invalidateQueries(["expenses"]);
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
       setDeleteId(null);
       toast.success("Expense deleted successfully");
     },
@@ -71,15 +104,16 @@ function MyExpensesPage() {
     }
   };
 
-  const getCategoryBadge = (category) => {
-    const badges = {
-      TRAVEL: "bg-blue-50 text-blue-700 border-blue-200",
-      FOOD: "bg-orange-50 text-orange-700 border-orange-200",
-      ACCOMMODATION: "bg-purple-50 text-purple-700 border-purple-200",
-      OFFICE_SUPPLIES: "bg-pink-50 text-pink-700 border-pink-200",
-      MISCELLANEOUS: "bg-gray-50 text-gray-700 border-gray-200",
+  const formatCategory = (category) => {
+    if (!category) return "—";
+    const mapping = {
+      HARDWARE: "Hardware",
+      SOFTWARE_LICENSE: "Software License",
+      TRAVEL_TRAVEL: "Travel & Commute",
+      MEALS_REFRESHMENT: "Meals & Refreshments",
+      TRAINING_MEMBERSHIP: "Training & Membership",
     };
-    return badges[category] || "bg-gray-50 text-gray-700 border-gray-200";
+    return mapping[category] || category.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
   };
 
   const backendBaseUrl = import.meta.env.VITE_API_BASE_URL.replace("/api/v1", "");
@@ -91,16 +125,16 @@ function MyExpensesPage() {
       render: (row) => (row.expense_date ? new Date(row.expense_date).toLocaleDateString() : "—"),
     },
     {
-      key: "project_name",
-      title: "Project",
-      render: (row) => row.project_name || <span className="text-gray-400 italic">General / None</span>,
+      key: "task_title",
+      title: "Assigned Task",
+      render: (row) => row.task_title || <span className="text-gray-400 italic">General / Unlinked</span>,
     },
     {
       key: "category",
       title: "Category",
       render: (row) => (
-        <span className={`px-2.5 py-0.5 rounded-full text-2xs font-extrabold uppercase border ${getCategoryBadge(row.category)}`}>
-          {row.category}
+        <span className="text-xs text-[var(--text-primary)] font-medium">
+          {formatCategory(row.category)}
         </span>
       ),
     },
@@ -117,24 +151,29 @@ function MyExpensesPage() {
     {
       key: "status",
       title: "Status",
-      render: (row) => (
-        <div className="flex flex-col gap-0.5">
-          <span className={`px-2.5 py-0.5 rounded-full text-2xs font-extrabold uppercase border ${
-            row.status === "APPROVED"
-              ? "bg-emerald-100 text-emerald-800 border-emerald-200"
-              : row.status === "REJECTED"
-              ? "bg-red-100 text-red-800 border-red-200"
-              : "bg-amber-100 text-amber-800 border-amber-200"
-          }`}>
-            {row.status}
-          </span>
-          {row.status === "REJECTED" && row.rejection_reason && (
-            <span className="text-3xs text-red-500 font-medium italic truncate max-w-xs" title={row.rejection_reason}>
-              Reason: {row.rejection_reason}
+      render: (row) => {
+        let badgeClass = "bg-amber-50 text-amber-700 border-amber-200";
+        let text = "Awaiting Mgr";
+
+        if (row.status === "APPROVED") {
+          badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
+          text = "Approved";
+        } else if (row.status === "REJECTED") {
+          badgeClass = "bg-red-50 text-red-700 border-red-200";
+          text = "Rejected";
+        } else if (row.manager_approval === "APPROVED") {
+          badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
+          text = "Awaiting Admin";
+        }
+
+        return (
+          <div className="flex flex-col gap-0.5">
+            <span className={`inline-flex justify-center items-center w-32 px-2.5 py-0.5 rounded-full text-2xs font-extrabold uppercase border ${badgeClass} whitespace-nowrap text-center`}>
+              {text}
             </span>
-          )}
-        </div>
-      ),
+          </div>
+        );
+      },
     },
     {
       key: "receipt",
@@ -143,14 +182,12 @@ function MyExpensesPage() {
         if (!row.attachment_name) return <span className="text-xs text-gray-400 italic">No receipt</span>;
         const fileUrl = `${backendBaseUrl}/uploads/expenses/${row.attachment_name}`;
         return (
-          <a
-            href={fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 text-gray-600 rounded-lg text-xs font-bold border border-gray-150 transition-colors"
+          <button
+            onClick={() => handleSafeDownload(fileUrl)}
+            className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 text-gray-600 rounded-lg text-xs font-bold border border-gray-150 transition-colors cursor-pointer focus:outline-none"
           >
             <FaFileDownload /> View Receipt
-          </a>
+          </button>
         );
       },
     },
@@ -158,25 +195,14 @@ function MyExpensesPage() {
       key: "actions",
       title: "Actions",
       render: (row) => {
-        // Can only modify/delete PENDING expense claims
-        if (row.status !== "PENDING") {
-          return <span className="text-xs text-gray-400 font-semibold italic">Claim Locked</span>;
-        }
+        const rolePath = user?.role === "MANAGER" ? "manager/my-expenses" : "employee/expenses";
         return (
-          <div className="flex gap-2">
-            <button
-              onClick={() => { setEditingExpense(row); setIsModalOpen(true); }}
-              className="px-2.5 py-1 bg-blue-500 hover:bg-blue-650 text-white rounded-lg text-xs font-bold transition-colors"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => setDeleteId(row.id)}
-              className="px-2.5 py-1 bg-red-500 hover:bg-red-650 text-white rounded-lg text-xs font-bold transition-colors"
-            >
-              Delete
-            </button>
-          </div>
+          <button
+            onClick={() => navigate(`/${rolePath}/${row.id}`)}
+            className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer flex items-center gap-1"
+          >
+            <FaEye className="text-[10px]" /> Timeline
+          </button>
         );
       },
     },
@@ -184,21 +210,25 @@ function MyExpensesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">My Expense Claims</h1>
-          <p className="text-[var(--text-secondary)] text-sm mt-1">File and track reimbursements for business expenditures</p>
+          <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Task Expense Claims</h1>
+          <p className="text-[var(--text-secondary)] text-sm mt-1">File and track reimbursements for task expenditures</p>
         </div>
-        <Button onClick={() => { setEditingExpense(null); setIsModalOpen(true); }} className="flex items-center gap-2">
-          <FaPlus /> Submit Expense
-        </Button>
+
+        {/* Search Field */}
+        <TableSearch
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search expenses..."
+        />
       </div>
 
       {myExpenses.length === 0 ? (
         <div className="space-y-6">
           <EmptyState
             title="No Expenses Filed"
-            description="You haven't filed any travel, food, or supply reimbursement requests yet. Click 'Submit Expense' to create one."
+            description="You haven't filed any hardware, software licensing, or operational reimbursement requests yet. You can submit new claims directly from your tasks on the My Tasks page."
           />
           <ExpenseModal
             isOpen={isModalOpen}
@@ -208,11 +238,16 @@ function MyExpensesPage() {
             initialData={editingExpense}
           />
         </div>
+      ) : filteredExpenses.length === 0 ? (
+        <EmptyState
+          title="No Matching Expenses"
+          description="No expenses match your search query. Try typing another category, description, or task name."
+        />
       ) : (
         <>
           <DataTable
             columns={columns}
-            data={myExpenses}
+            data={filteredExpenses}
             loading={isLoading}
             actions={false}
           />
@@ -225,7 +260,7 @@ function MyExpensesPage() {
             initialData={editingExpense}
           />
 
-          {deleteId && (
+           {deleteId && (
             <ConfirmDialog
               title="Delete Claim"
               description="Are you sure you want to delete this pending claim? This action will permanently remove it from auditing records."

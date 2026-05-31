@@ -12,52 +12,40 @@ const {
 const createExpense = async ({
   userId,
   projectId,
+  assignedManagerId,
   amount,
   category,
   description,
   expenseDate,
+  managerApproval = "PENDING",
+  status = "PENDING",
+  taskId = null,
 }) => {
   const result = await pool
     .request()
-    .input(
-      "userId",
-      sql.Int,
-      userId
-    )
-    .input(
-      "projectId",
-      sql.Int,
-      projectId
-    )
-    .input(
-      "amount",
-      sql.Decimal(18, 2),
-      amount
-    )
-    .input(
-      "category",
-      sql.NVarChar,
-      category
-    )
-    .input(
-      "description",
-      sql.NVarChar(sql.MAX),
-      description
-    )
-    .input(
-      "expenseDate",
-      sql.Date,
-      expenseDate
-    )
+    .input("userId", sql.Int, userId)
+    .input("projectId", sql.Int, projectId)
+    .input("assignedManagerId", sql.Int, assignedManagerId || null)
+    .input("amount", sql.Decimal(18, 2), amount)
+    .input("category", sql.NVarChar, category)
+    .input("description", sql.NVarChar(sql.MAX), description)
+    .input("expenseDate", sql.Date, expenseDate)
+    .input("managerApproval", sql.NVarChar, managerApproval)
+    .input("status", sql.NVarChar, status)
+    .input("taskId", sql.Int, taskId || null)
     .query(`
       INSERT INTO expenses
       (
         user_id,
         project_id,
+        assigned_manager_id,
         amount,
         category,
         description,
-        expense_date
+        expense_date,
+        manager_approval,
+        status,
+        task_id
       )
 
       OUTPUT INSERTED.*
@@ -66,10 +54,14 @@ const createExpense = async ({
       (
         @userId,
         @projectId,
+        @assignedManagerId,
         @amount,
         @category,
         @description,
-        @expenseDate
+        @expenseDate,
+        @managerApproval,
+        @status,
+        @taskId
       )
     `);
 
@@ -172,41 +164,43 @@ const updateExpenseStatus =
     status,
     reviewedBy,
     rejectionReason,
+    managerApproval,
+    managerApprovedBy,
   }) => {
-    await pool
-      .request()
-      .input(
-        "expenseId",
-        sql.Int,
-        expenseId
-      )
-      .input(
-        "status",
-        sql.NVarChar,
-        status
-      )
-      .input(
-        "reviewedBy",
-        sql.Int,
-        reviewedBy
-      )
-      .input(
-        "rejectionReason",
-        sql.NVarChar,
-        rejectionReason
-      )
-      .query(`
-        UPDATE expenses
+    const fields = [];
+    const request = pool.request();
+    request.input("expenseId", sql.Int, expenseId);
 
-        SET
-          status = @status,
-          reviewed_by = @reviewedBy,
-          reviewed_at = GETDATE(),
-          rejection_reason = @rejectionReason,
-          updated_at = GETDATE()
+    if (status !== undefined) {
+      fields.push("status = @status");
+      request.input("status", sql.NVarChar, status);
+    }
+    if (reviewedBy !== undefined) {
+      fields.push("reviewed_by = @reviewedBy");
+      request.input("reviewedBy", sql.Int, reviewedBy);
+      fields.push("reviewed_at = GETDATE()");
+    }
+    if (rejectionReason !== undefined) {
+      fields.push("rejection_reason = @rejectionReason");
+      request.input("rejectionReason", sql.NVarChar, rejectionReason);
+    }
+    if (managerApproval !== undefined) {
+      fields.push("manager_approval = @managerApproval");
+      request.input("managerApproval", sql.NVarChar, managerApproval);
+    }
+    if (managerApprovedBy !== undefined) {
+      fields.push("manager_approved_by = @managerApprovedBy");
+      request.input("managerApprovedBy", sql.Int, managerApprovedBy);
+      fields.push("manager_reviewed_at = GETDATE()");
+    }
+    fields.push("updated_at = GETDATE()");
 
-        WHERE id = @expenseId
-      `);
+    const query = `
+      UPDATE expenses
+      SET ${fields.join(", ")}
+      WHERE id = @expenseId
+    `;
+    await request.query(query);
   };
 
 
@@ -215,34 +209,46 @@ const updateExpenseStatus =
 // ============================================
 
 const getExpenses = async ({
-  page,
-  limit,
+  page = 1,
+  limit = 10,
   status,
   category,
   userId,
   userRole,
+  my,
 }) => {
-  const offset =
-    (page - 1) * limit;
+  const parsedPage = Number(page) || 1;
+  const parsedLimit = Number(limit) || 10;
+  const offset = (parsedPage - 1) * parsedLimit;
 
   let query = `
     SELECT 
       e.*,
       CONCAT(u.first_name, ' ', u.last_name) AS employee_name,
       u.email AS employee_email,
+      CONCAT(mgr.first_name, ' ', mgr.last_name) AS manager_name,
+      CONCAT(adm.first_name, ' ', adm.last_name) AS admin_name,
       p.project_name AS project_name,
+      t.title AS task_title,
       a.file_name AS attachment_name,
       a.file_path AS attachment_path
     FROM expenses e
     LEFT JOIN users u ON e.user_id = u.id
+    LEFT JOIN users mgr ON e.manager_approved_by = mgr.id
+    LEFT JOIN users adm ON e.reviewed_by = adm.id
     LEFT JOIN projects p ON e.project_id = p.id
+    LEFT JOIN tasks t ON e.task_id = t.id
     LEFT JOIN expense_attachments a ON e.id = a.expense_id
     WHERE e.is_deleted = 0
   `;
 
-  if (userRole === "MANAGER") {
+  if (my) {
     query += `
-      AND p.assigned_manager_id = @userId
+      AND e.user_id = @userId
+    `;
+  } else if (userRole === "MANAGER") {
+    query += `
+      AND (p.assigned_manager_id = @userId OR e.assigned_manager_id = @userId)
     `;
   } else if (userRole === "EMPLOYEE") {
     query += `
@@ -272,9 +278,9 @@ const getExpenses = async ({
 
   request
     .input("offset", sql.Int, offset)
-    .input("limit", sql.Int, limit);
+    .input("limit", sql.Int, parsedLimit);
 
-  if (userRole === "MANAGER" || userRole === "EMPLOYEE") {
+  if (my || userRole === "MANAGER" || userRole === "EMPLOYEE") {
     request.input("userId", sql.Int, userId);
   }
 
@@ -314,6 +320,60 @@ const softDeleteExpense =
       `);
   };
 
+// ============================================
+// UPDATE EXPENSE FIELDS
+// ============================================
+const updateExpense = async (expenseId, {
+  projectId,
+  assignedManagerId,
+  amount,
+  category,
+  description,
+  expenseDate,
+  taskId,
+}) => {
+  const result = await pool
+    .request()
+    .input("expenseId", sql.Int, expenseId)
+    .input("projectId", sql.Int, projectId || null)
+    .input("assignedManagerId", sql.Int, assignedManagerId || null)
+    .input("amount", sql.Decimal(18, 2), amount)
+    .input("category", sql.NVarChar, category)
+    .input("description", sql.NVarChar(sql.MAX), description)
+    .input("expenseDate", sql.Date, expenseDate)
+    .input("taskId", sql.Int, taskId || null)
+    .query(`
+      UPDATE expenses
+      SET
+        project_id = @projectId,
+        assigned_manager_id = @assignedManagerId,
+        amount = @amount,
+        category = @category,
+        description = @description,
+        expense_date = @expenseDate,
+        task_id = @taskId,
+        updated_at = GETDATE()
+      OUTPUT INSERTED.*
+      WHERE id = @expenseId
+      AND is_deleted = 0
+    `);
+
+  return result.recordset[0];
+};
+
+// ============================================
+// DELETE EXPENSE ATTACHMENTS
+// ============================================
+const deleteExpenseAttachments = async (expenseId) => {
+  await pool
+    .request()
+    .input("expenseId", sql.Int, expenseId)
+    .query(`
+      DELETE FROM expense_attachments
+      WHERE expense_id = @expenseId
+    `);
+};
+
 module.exports = {
   createExpense,
   saveExpenseAttachment,
@@ -321,4 +381,6 @@ module.exports = {
   updateExpenseStatus,
   getExpenses,
   softDeleteExpense,
+  updateExpense,
+  deleteExpenseAttachments,
 };

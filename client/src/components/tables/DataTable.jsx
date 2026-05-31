@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import EmptyState from "../common/EmptyState";
@@ -9,6 +9,7 @@ function DataTable({
   data = [],
   loading = false,
   actions = false,
+  selectable = false,
   onEdit,
   onDelete,
 }) {
@@ -68,14 +69,16 @@ function DataTable({
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-[var(--bg-tertiary)] border-b border-[var(--border-color)] text-[var(--text-secondary)] font-bold text-xs uppercase tracking-wider">
-              <th className="px-6 py-4.5 w-12 text-center">
-                <input
-                  type="checkbox"
-                  checked={selectedRows.length === data.length && data.length > 0}
-                  onChange={handleSelectAll}
-                  className="w-4 h-4 rounded border-[var(--border-color)] bg-[var(--bg-secondary)] text-blue-500 focus:ring-blue-500/20 focus:ring-2 cursor-pointer transition-all"
-                />
-              </th>
+              {selectable && (
+                <th className="px-6 py-4.5 w-12 text-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedRows.length === data.length && data.length > 0}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 rounded border-[var(--border-color)] bg-[var(--bg-secondary)] text-blue-500 focus:ring-blue-500/20 focus:ring-2 cursor-pointer transition-all"
+                  />
+                </th>
+              )}
 
               {columns.map((column) => (
                 <th
@@ -114,14 +117,16 @@ function DataTable({
                     ${selectedRows.includes(row.id) ? "bg-blue-500/10 border-blue-500/20" : ""}
                   `}
                 >
-                  <td className="px-6 py-4 text-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedRows.includes(row.id)}
-                      onChange={() => handleSelectRow(row.id)}
-                      className="w-4 h-4 rounded border-[var(--border-color)] bg-[var(--bg-secondary)] text-blue-500 focus:ring-blue-500/20 focus:ring-2 cursor-pointer transition-all"
-                    />
-                  </td>
+                  {selectable && (
+                    <td className="px-6 py-4 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.includes(row.id)}
+                        onChange={() => handleSelectRow(row.id)}
+                        className="w-4 h-4 rounded border-[var(--border-color)] bg-[var(--bg-secondary)] text-blue-500 focus:ring-blue-500/20 focus:ring-2 cursor-pointer transition-all"
+                      />
+                    </td>
+                  )}
 
                   {columns.map((column) => (
                     <td
@@ -130,7 +135,7 @@ function DataTable({
                     >
                       {column.render
                         ? column.render(row)
-                        : row[column.key] ?? "—"}
+                        : row[column.key] ?? "â€”"}
                     </td>
                   ))}
 
@@ -139,13 +144,13 @@ function DataTable({
                       <div className="flex gap-2">
                         <button
                           onClick={() => onEdit?.(row)}
-                          className="px-3 py-1.5 bg-blue-600/10 border border-blue-500/30 dark:border-blue-500/20 hover:bg-blue-600 text-blue-600 dark:text-blue-400 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                          className="px-3 py-1.5 bg-blue-600/10 border border-blue-500/30 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => onDelete?.(row.id)}
-                          className="px-3 py-1.5 bg-rose-600/10 border border-rose-500/30 dark:border-rose-500/20 hover:bg-rose-600 text-rose-600 dark:text-rose-400 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                          className="px-3 py-1.5 bg-rose-600/10 border border-rose-500/30 hover:bg-rose-600 text-rose-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
                         >
                           Delete
                         </button>

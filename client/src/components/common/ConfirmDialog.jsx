@@ -1,6 +1,6 @@
-function ConfirmDialog({ title, description, onConfirm, onCancel }) {
+﻿function ConfirmDialog({ title, description, onConfirm, onCancel }) {
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4">
+    <div className="fixed inset-0 z-50 bg-slate-800/50 backdrop-blur-sm flex justify-center items-center p-4">
       <div className="glass-panel bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6 w-full max-w-md shadow-2xl">
         <h2 className="text-xl font-bold mb-3 text-[var(--text-primary)]">{title}</h2>
         <p className="text-[var(--text-secondary)] mb-6 text-sm leading-relaxed">{description}</p>

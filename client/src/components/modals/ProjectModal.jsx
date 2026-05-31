@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes, FaProjectDiagram, FaCalendarAlt, FaFlag, FaInfoCircle, FaDollarSign, FaChartLine, FaUserTie } from "react-icons/fa";
+import { FaTimes, FaProjectDiagram, FaCalendarAlt, FaFlag, FaInfoCircle, FaChartLine, FaUserTie } from "react-icons/fa";
 import { getUsers } from "../../services/userService";
 
 function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
@@ -80,7 +80,7 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.95, y: 15, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="w-full max-w-lg glass-panel rounded-3xl p-6.5 border border-white/10 shadow-2xl relative overflow-hidden z-10 my-8"
+          className="w-full max-w-lg glass-panel rounded-3xl p-6.5 border border-[var(--border-color)] shadow-2xl relative overflow-hidden z-10 my-8"
         >
           {/* Decorative background ambient lighting */}
           <div className="absolute -right-12 -bottom-12 w-32 h-32 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
@@ -113,6 +113,7 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                   type="text"
                   placeholder="Enterprise Core Upgrade"
                   required
+                  autoComplete="off"
                   {...register("project_name", { required: "Project name is required" })}
                   className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:bg-[var(--bg-secondary)] transition-all"
                 />
@@ -147,7 +148,28 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                   <input
                     type="date"
                     required
-                    {...register("start_date", { required: "Start date is required" })}
+                    min={(() => {
+                      if (initialData?.start_date) {
+                        try {
+                          return new Date(initialData.start_date).toISOString().split("T")[0];
+                        } catch (e) {}
+                      }
+                      const d = new Date();
+                      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                    })()}
+                    {...register("start_date", { 
+                      required: "Start date is required",
+                      validate: (val) => {
+                        if (!initialData) {
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          const selected = new Date(val);
+                          selected.setHours(0, 0, 0, 0);
+                          return selected >= today || "Start date cannot be in the past";
+                        }
+                        return true;
+                      }
+                    })}
                     className="w-full pl-11 pr-4 py-3 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 transition-all focus:bg-[var(--bg-secondary)]"
                   />
                 </div>
@@ -164,6 +186,10 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                   </span>
                   <input
                     type="date"
+                    min={startDateWatch || (() => {
+                      const d = new Date();
+                      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                    })()}
                     {...register("end_date", {
                       validate: (val) => {
                         if (!val) return true;
@@ -256,6 +282,7 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                     type="number"
                     step="0.01"
                     placeholder="50000"
+                    autoComplete="off"
                     {...register("budget", { 
                       required: "Budget is required",
                       min: { value: 0, message: "Budget must be positive" } 
@@ -279,6 +306,7 @@ function ProjectModal({ isOpen, onClose, onSubmit, loading, initialData }) {
                     min="0"
                     max="100"
                     placeholder="25"
+                    autoComplete="off"
                     {...register("completion_percentage", {
                       min: { value: 0, message: "Min limit is 0" },
                       max: { value: 100, message: "Max limit is 100" },

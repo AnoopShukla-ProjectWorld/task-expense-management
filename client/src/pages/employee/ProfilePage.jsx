@@ -1,15 +1,17 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { getProfile, updateProfile } from "../../services/userService";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../../components/common/Button";
-import { FaUser, FaEnvelope, FaIdCard, FaBuilding, FaUserTag, FaPhoneAlt } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaIdCard, FaBuilding, FaUserTag, FaPhoneAlt, FaCamera } from "react-icons/fa";
 
 function ProfilePage() {
   const queryClient = useQueryClient();
-  const { user: authUser } = useAuth();
+  const { user: authUser, setUser: setAuthUser } = useAuth();
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm();
 
@@ -30,7 +32,7 @@ function ProfilePage() {
 
   useEffect(() => {
     if (profile) {
-      const parsed = parsePhone(profile.phone_number);
+      const parsed = parsePhone(profile.phone_number || profile.mobile_number);
       reset({
         first_name: profile.first_name || "",
         last_name: profile.last_name || "",
@@ -42,8 +44,16 @@ function ProfilePage() {
 
   const updateMutation = useMutation({
     mutationFn: updateProfile,
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
       queryClient.invalidateQueries(["profile"]);
+      if (updatedUser) {
+        setAuthUser({
+          ...updatedUser,
+          role: updatedUser.role?.toUpperCase(),
+          fullName: updatedUser.full_name || updatedUser.fullName || "",
+        });
+      }
+      setAvatarFile(null);
       toast.success("Profile updated successfully!");
     },
     onError: (err) => {
@@ -54,10 +64,16 @@ function ProfilePage() {
   const onSubmit = (data) => {
     const { phone_country, phone_local, ...rest } = data;
     const combinedPhone = phone_local ? `${phone_country}${phone_local}` : "";
-    updateMutation.mutate({
-      ...rest,
-      phone_number: combinedPhone,
-    });
+    
+    const formData = new FormData();
+    formData.append("first_name", data.first_name);
+    formData.append("last_name", data.last_name);
+    formData.append("phone_number", combinedPhone);
+    if (avatarFile) {
+      formData.append("profile_image", avatarFile);
+    }
+    
+    updateMutation.mutate(formData);
   };
 
   if (isLoading) {
@@ -80,11 +96,52 @@ function ProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card Summary */}
         <div className="glass-panel rounded-2xl p-6 flex flex-col items-center text-center shadow-lg h-fit">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[var(--accent-blue)] to-[var(--accent-purple)] text-white flex items-center justify-center text-3xl font-extrabold shadow-md mb-4 uppercase">
-            {profile?.full_name ? profile.full_name.charAt(0) : "U"}
+          {/* Profile Picture Uploader */}
+          <div className="relative group mb-4 cursor-pointer">
+            <input
+              type="file"
+              accept="image/png, image/jpeg, image/jpg"
+              onChange={(e) => {
+                const files = e.target.files;
+                if (files && files.length > 0) {
+                  const file = files[0];
+                  if (file.size > 5 * 1024 * 1024) {
+                    toast.error("Avatar image must be under 5MB");
+                    return;
+                  }
+                  setAvatarFile(file);
+                  setAvatarPreview(URL.createObjectURL(file));
+                }
+              }}
+              id="avatar-upload-input"
+              className="hidden"
+            />
+            <label htmlFor="avatar-upload-input" className="cursor-pointer block relative">
+              {avatarPreview ? (
+                <img
+                  src={avatarPreview}
+                  alt="Avatar Preview"
+                  className="w-20 h-20 rounded-full object-cover border border-[var(--border-color)] shadow-md"
+                />
+              ) : profile?.profile_image ? (
+                <img
+                  src={`http://localhost:5000${profile.profile_image}`}
+                  alt={profile.full_name}
+                  className="w-20 h-20 rounded-full object-cover border border-[var(--border-color)] shadow-md"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[var(--accent-blue)] to-[var(--accent-purple)] text-white flex items-center justify-center text-3xl font-extrabold shadow-md uppercase">
+                  {profile?.full_name ? profile.full_name.charAt(0) : "U"}
+                </div>
+              )}
+              {/* Camera Hover Overlay */}
+              <div className="absolute inset-0 bg-slate-900/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity duration-200">
+                <FaCamera className="text-lg" />
+              </div>
+            </label>
           </div>
           <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">{profile?.full_name}</h3>
-          <p className="text-xs text-[var(--accent-blue)] font-bold uppercase tracking-wider mt-0.5">{profile?.role_name || "EMPLOYEE"}</p>
+          <p className="text-xs text-[var(--accent-blue)] font-bold uppercase tracking-wider mt-0.5">{profile?.role || "EMPLOYEE"}</p>
           
           <div className="w-full border-t border-[var(--border-color)] mt-6 pt-5 space-y-3.5 text-left text-sm text-[var(--text-secondary)]">
             <div className="flex items-center gap-3">
@@ -116,6 +173,7 @@ function ProfilePage() {
                   <FaUser className="absolute left-4 top-3.5 text-[var(--text-secondary)]" />
                   <input
                     type="text"
+                    autoComplete="off"
                     {...register("first_name", {
                       required: "First name is required",
                       pattern: {
@@ -137,6 +195,7 @@ function ProfilePage() {
                   <FaUser className="absolute left-4 top-3.5 text-[var(--text-secondary)]" />
                   <input
                     type="text"
+                    autoComplete="off"
                     {...register("last_name", {
                       required: "Last name is required",
                       pattern: {
@@ -179,6 +238,7 @@ function ProfilePage() {
                     <input
                       type="text"
                       placeholder="9999999999"
+                      autoComplete="off"
                       {...register("phone_local", {
                         validate: (val) => {
                           if (!val) return true; // Optional field
